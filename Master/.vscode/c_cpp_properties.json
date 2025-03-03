@@ -1,0 +1,40 @@
+{
+    "configurations": [
+        {
+            "name": "Win32",
+            "includePath": [
+                "${workspaceFolder}/**",
+                "D:\\documents\\Arduino\\libraries\\Adafruit_RGB_LCD_Shield_Library",
+                "D:/documents/Arduino/hardware/arduino/avr/cores/arduino",
+                "D:/documents/Arduino/hardware/arduino/avr/libraries/EEPROM/",
+                "D:/documents/Arduino/hardware/arduino/avr/libraries/SPI/",
+                "D:/documents/Arduino/hardware/arduino/avr/libraries/SoftwareSerial/",
+                "D:/documents/Arduino/hardware/arduino/avr/libraries/Wire/src",
+                "D:/documents/Arduino/hardware/tools/avr/avr/include/",
+                "D:/documents/Arduino/hardware/tools/avr/avr/include/avr/",
+                "D:/documents/Arduino//hardware/tools/avr/avr/include/compat/",
+                "D:/documents/Arduino//hardware/tools/avr/avr/include/util/",
+                "D:/documents/Arduino/hardware/tools/avr/lib/gcc/avr/7.3.0/include/",
+                "D:/documents/Arduino/hardware/tools/avr/lib/gcc/avr/7.3.0/include-fixed/",
+                "D:/documents/Arduino/hardware/arduino/avr/variants/standard"
+            ],
+            
+            "defines": [
+                "_DEBUG",
+                "UNICODE",
+                "_UNICODE",
+                "USBCON"
+            ],
+            "browse": {
+                "limitSymbolsToIncludedHeaders": true,
+                "databaseFilename": ""
+            },
+            "windowsSdkVersion": "10.0.19041.0",
+            "compilerPath": "C:/Program Files (x86)/Microsoft Visual Studio/2019/Community/VC/Tools/MSVC/14.29.30037/bin/Hostx64/x64/cl.exe",
+            "cStandard": "c17",
+            "cppStandard": "c++17",
+            "intelliSenseMode": "windows-msvc-x64"
+        }
+    ],
+    "version": 4
+}
