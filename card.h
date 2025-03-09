@@ -22,7 +22,7 @@ typedef struct Card {
 void push(int rank, int suit);
 void initDeck();
 void shuffle();
-void swap(int *x, int *y);
+void swap(Card *x, Card *y);
 void displayDeck();
 
 #endif
