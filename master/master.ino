@@ -4,6 +4,7 @@
 // Includes all other libraries
 #include "player.h"
 #include "card.h"
+#include "interface.h"
 
 // Defines all game macros
 #define MAX_PLAYERS 8
