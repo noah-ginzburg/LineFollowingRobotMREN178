@@ -17,12 +17,7 @@ typedef struct Card {
     Suit suit;
 }Card;
 
-
-//Function prototypes
-void push(int rank, int suit);
-void initDeck();
-void shuffle();
 void swap(Card *x, Card *y);
-void displayDeck();
-
+void displaySuit(Card x);
+void displayRank(Card x);
 #endif
