@@ -9,7 +9,7 @@ ATTRIBUTIONS: MREN178 Course Content, GitHub Copilot
 #include <Arduino.h>
 #include <LiquidCrystal.h>
 #include <SoftwareSerial.h>
-//#include <card.h>
+#include <card.h>
 
 // LCD Keypad Shield Pins
 LiquidCrystal lcd(8, 9, 4, 5, 6, 7);
