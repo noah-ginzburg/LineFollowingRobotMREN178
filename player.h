@@ -17,6 +17,7 @@ ATTRIBUTIONS:
 
 #define MAX_HAND_SIZE 10
 
+//player has three options, they can play a card, draw, view their cards or pass their turn
 typedef enum PlayerOption
 {
     PLAY,

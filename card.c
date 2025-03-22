@@ -17,6 +17,8 @@ void displaySuit(Card* x){
     switch (x->suit){
         case clubs:
             printf("Clubs ");
+            //display the card to the LED screen on reciever's arduino
+            //repeat the same for the subsequent printf statements
             break;
         case diamonds:
             printf("Diamonds ");
@@ -35,6 +37,9 @@ void displayRank(Card* x){
     switch (x->rank){
         case A:
             printf("A ");
+            //Display the rank to the LCD screen
+            //functionality needs to be added to
+            //replace the printf statements
             break;
         case Two:
             printf("2 ");
