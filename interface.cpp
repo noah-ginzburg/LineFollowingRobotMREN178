@@ -106,3 +106,37 @@ void ThrowError(LiquidCrystal *lcd, char *errMsg)
 
     delay(5000);
 }
+
+int IsButtonPressed(int analogVal, int desiredButton)
+{
+    int analogMapping = FindBtnMapping(analogVal);
+    return analogMapping == desiredButton;
+}
+
+int FindBtnMapping(int val)
+{
+    if (val < RIGHT)
+    {
+        return RIGHT;
+    }
+    else if (val < UP)
+    {
+        return UP;
+    }
+    else if (val <= DOWN)
+    {
+        return DOWN;
+    }
+    else if (val <= LEFT)
+    {
+        return LEFT;
+    }
+    else if (val <= SELECT)
+    {
+        return SELECT;
+    }
+    else
+    {
+        return NONE;
+    }
+}

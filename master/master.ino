@@ -13,8 +13,8 @@
 const int rs = 8, en = 9, d4 = 4, d5 = 5, d6 = 6, d7 = 7;
 LiquidCrystal lcd(rs, en, d4, d5, d6, d7);
 const int analogInPin = A0;
-int sensorValue = 0;
-int prevSensorValue = 0;
+int buttonVal = 0;
+int prevButtonVal = 0;
 
 /////////////////////////////////////////
 typedef enum gamestate
@@ -26,11 +26,11 @@ typedef enum gamestate
   END_GAME
 } GameState;
 
-GameState gs;
+GameState gs = INITIALIZE;
 
-Player *players;
-int numPlayers;
-int currentPlayer;
+Player *players = malloc(MAX_PLAYERS * sizeof(Player));
+int numPlayers = 0;
+int currentPlayer = 1;
 
 //////////////////////////////////////////////////
 
@@ -42,37 +42,42 @@ void setup()
   Serial.begin(9600);
   //////////////////////////////////////////////////////
 
-  gs = INITIALIZE;
-  players = malloc(sizeof(Player) * MAX_PLAYERS);
-  numPlayers = 0;
-
   gs = PLAYERS_WAIT
 }
 
 void loop()
 {
+  buttonVal = analogRead(analogInPin);
+
   switch (gs)
   {
-
   case INITIALIZE:
     ResetGame();
     break;
   case PLAYERS_WAIT:
 
     // Function to wait on player connect (use a while loop, detect when select is presesd to start the game)
+    do
+    {
 
-    // If players is not at max size
+      // If Received new player from anothre arduino (serial.available)
+      // Detect incoming connection from player, check if command packet says connect
 
-    // If Received new player from anothre arduino
-    // Detect incoming connection from player
+      if (1) // if master received a packet and the command is to add a new player
+      {
+        Player newPlayer;
+        newPlayer.playerNum = numPlayers + 1;
 
-    Player newPlayer;
-    newPlayer.playerNum = numPlayers + 1;
+        players[numPlayers++] = newPlayer;
 
-    players[numPlayers++] = newPlayer;
+        AutoPrintFull(&lcd, "Player ", 1);
+        AutoPrintFull(&lcd, newPlayer.playerNum, 0);
+        AutoPrintFull(&lcd, "is Connected!", 0);
 
-    // DisplayMsg("Player [num] connected");
-    // delay(3000);
+        delay(5000);
+      }
+
+    } while (numPlayers < MAX_PLAYERS && (numPlayers > 1 && !IsButtonPressed(buttonVal, SELECT))); // may have to implement button debouncing (so it only activates once), this line is just if prevbuttonval != buttonval
 
     realloc(players, numPlayers * sizeof(Player)); // Check if this line actually works
 
@@ -98,7 +103,7 @@ void loop()
     {
 
       // Wait on player option
-      PO playerOption = 0; // for now
+      PO playerOption = 0; // for now, use commandpacket later
       ReadPlayerOption(playerOption);
 
       // If deck is empty, reshuffle discard, enqueue everything to deck
@@ -131,55 +136,14 @@ void loop()
     default break;
   }
 
-  /*
-  // when characters arrive over the serial port...
-  if (Serial.available())
-  {
-    // wait a bit for the entire message to arrive
-    delay(100);
-    // clear the screen
-    lcd.clear();
-    // read all the available characters
-    while (Serial.available() > 0)
-    {
-      // display each character to the LCD
-      char c = Serial.read();
-      if (c >= 32 && c <= 126)
-      {
-        lcd.write(c);
-      }
-    }
-  }
+  prevButtonVal = buttonVal;
 
-  sensorValue = analogRead(analogInPin);
-  // Serial.print("sensor = ");
-  Serial.println(sensorValue);
-  delay(10);
-
-  if (prevSensorValue != sensorValue)
-  {
-    if (sensorValue >= 0 && sensorValue <= 60)
-    {
-      lcd.scrollDisplayLeft();
-    }
-    else if (sensorValue >= 400 && sensorValue <= 600)
-    {
-      lcd.scrollDisplayRight();
-    }
-  }
-
-  prevSensorValue = sensorValue;
-  */
+  delay(50);
 }
 
 void ResetGame()
 {
   // Initialize everything here again, should reset every single variable
-}
-
-void DisplayMsg(char *str)
-{
-  // Function to easily display a message on the LCD
 }
 
 void ReadPlayerOption(PO po)
