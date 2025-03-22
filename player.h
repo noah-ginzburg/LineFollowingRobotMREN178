@@ -8,7 +8,7 @@ ATTRIBUTIONS:
 ******************************************************************************/
 
 #ifndef PLAYER.H
-#define PLAYER .H
+#define PLAYER.H
 
 #include "card.h"
 
@@ -21,19 +21,24 @@ typedef enum PlayerOption
 {
     PLAY,
     DRAW,
-    SHOW
+    SHOW,
+    PASS
 } PO;
+
+typedef enum {false, true} bool;
 
 typedef struct player
 {
-    Card cards[MAX_HAND_SIZE];
+    Card* cards[MAX_HAND_SIZE];
     int curNumCards;
     int playerNum;
 } Player;
 
-void PlayCard(Card card);
-Card DrawCard();
+bool PlayCard(Player* player, int index, Card* lastPlayed);
+Card* DrawCard(Deck* deck);
 void ShowCards();
+void initPlayer(Player* player, int num);
+void deleteCard(Player* player, int index);
 // Not Done Yet,
 
 #endif

@@ -44,12 +44,12 @@ void displayDeck(Deck* deck) {
 //insert new card into the array
 void insert(int rank, int suit, Deck* deck) {
     if (deck->tos == MAX_CARDS-1) return;
-    deck->stack[(deck->tos)++].suit = (Suit)suit;
-    deck->stack[(deck->tos)].rank = (Rank)rank;
+    deck->stack[(deck->tos)++]->suit = (Suit)suit;
+    deck->stack[(deck->tos)]->rank = (Rank)rank;
     (deck->count)++;
 }
 
 //removes card from the deck
-Card removeCard(Deck* deck){
-    if (deck->tos != -1) return deck->stack[deck->tos--];
+Card* pop(Deck* deck){
+    if (deck->tos != -1) return deck->stack[(deck->tos)--];
 }

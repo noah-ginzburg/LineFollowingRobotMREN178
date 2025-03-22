@@ -13,8 +13,8 @@ void swap(Card* x, Card* y) {
     *y = temp;
 }
 
-void displaySuit(Card x){
-    switch (x.suit){
+void displaySuit(Card* x){
+    switch (x->suit){
         case clubs:
             printf("Clubs ");
             break;
@@ -31,8 +31,8 @@ void displaySuit(Card x){
     }
 }
 
-void displayRank(Card x){
-    switch (x.rank){
+void displayRank(Card* x){
+    switch (x->rank){
         case A:
             printf("A ");
             break;

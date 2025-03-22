@@ -18,6 +18,6 @@ typedef struct Card {
 }Card;
 
 void swap(Card *x, Card *y);
-void displaySuit(Card x);
-void displayRank(Card x);
+void displaySuit(Card* x);
+void displayRank(Card* x);
 #endif
