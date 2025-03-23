@@ -6,12 +6,12 @@
 typedef struct Deck {
     int tos;
     int count;
-    Card stack[MAX_CARDS];
+    Card* stack[MAX_CARDS];
 }Deck;
 
 //Function prototypes
 void insert(int rank, int suit, Deck* deck);
-Card removeCard(Deck *deck);
+Card* pop(Deck *deck);
 void initDeckCards();
 void initDeck();
 void shuffle();
