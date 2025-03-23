@@ -6,10 +6,19 @@ DATE:         20/03/2025
 ATTRIBUTIONS: MREN178 Course Content, GitHub Copilot
 ******************************************************************************/
 
+//Arduino Standard Libraries
 #include <Arduino.h>
 #include <LiquidCrystal.h>
 #include <SoftwareSerial.h>
+
+//Custom Libraries
 #include <card.h>
+#include <player.h>
+
+//C Standard Libraries
+#include <stdio.h>
+#include <string.h>
+#include <stdlib.h>
 
 // LCD Keypad Shield Pins
 LiquidCrystal lcd(8, 9, 4, 5, 6, 7);
@@ -17,12 +26,12 @@ LiquidCrystal lcd(8, 9, 4, 5, 6, 7);
 // HC-12 Wireless Communication
 SoftwareSerial HC12(10, 11);  
 
+#define NODE_ID 0 //Change this line for every node. NOTE: MASTER IS NODE ZERO (0). ALL PLAYERS ARE NODES 1-7. 
+             // WARNING!!! THIS IS NOT PLAYER_ID! NODE_ID IS THE ID OF THE NODE THE CODE IS RUNNING ON, WHEREAS PLAYER_ID IS THE ID OF THE PLAYER GETTING SENT DATA
+
 #define NUM_NODES 4    
 #define INF 9999       
 #define BUZZER_PIN 3   
-//#define MAX_MSG_LEN 10 
-
-#define MAX_SIZE 100
 
 #define BTN_RIGHT  0    // Analog Output Value for Right button
 #define BTN_LEFT   410  // Analog Output Value for Left button
@@ -31,83 +40,129 @@ SoftwareSerial HC12(10, 11);
 #define BTN_SELECT 640  // Analog Output Value for Select button
 #define BTN_NONE   1023 // No button pressed
 
+typedef enum commands {playCard = 0, drawCard, showCards} Cmd; //Commands
+
 typedef struct packet{
-
-  typedef enum commands {playCard, drawCard, showCards} Cmd;
-  //Card;
-
-  //command and card
-  //enum 0 is this, 1 play, 2 draw, 3... 4 invalid card, 5 
-  //optional string to send
-  //playerID
-
-
+    int senderID; // ID of who the packet is getting sent from
+    int receiverID; // ID of who the packet is getting sent to
+    Cmd command;
+    //Card cardsDealt[10]; //Use this when the master sends the client their initial or updated hand every round
+    Card cardPlayed; //Use this when the player sends the master which card to play
+    char string[50]; //String the master to send to the players - CHANGE LENGTH DEPENDING ON WHAT YOU WANT
 } Packet;
 
-void setup() {
-  Serial.begin(9600);             // Serial port to computer
-  HC12.begin(9600);               // Serial port to HC12
-  pinMode(BUZZER_PIN, OUTPUT);
+
+
+//// TEST VALUES TO SEE IF PROGRAM WORKS
+
+// Card* testcard;
+Card testcard = {Five, hearts}; // Example
+char string[50] = "Message Sent Sucessfully!";
+//String teststring;
+
+//// END OF TEST VALUES
+
+int sendPacket(int receiverID, Cmd command, Card cardPlayed, char string[]){ //Add "Card cardsDealt" later
+
+    Packet* pkt = (Packet*) malloc(sizeof(Packet)); //Initialize a packet
+    pkt->senderID = NODE_ID; // Set the sender ID as that node's ID - CHANGE DEPENDING ON WHICH ARDUINO THE CODE IS RUNNING ON
+    pkt->receiverID = receiverID;  // Set the variables of the packet to what was passed into the function
+    pkt->command = command;
+    //pkt->cardsDealt[10] = cardsDealt;
+    pkt->cardPlayed = cardPlayed;
+    //pkt->cardPlayed.suit = cardPlayed.suit;
+    strncpy(pkt->string, string, sizeof(pkt->string) - 1); // Copy string into pkt->string, leave space for null terminator
+    pkt->string[sizeof(pkt->string) - 1] = '\0'; // Ensure null termination
+
+    HC12.write((uint8_t*)pkt, sizeof(Packet)); //Create a pointer to the packet and translate it into bits of data. Then send bits over the HC12
+    //Serial.println("Packet Sent!");
+
+    free(pkt); //Free the memory used by malloc after sending message
+
+    return 1; //Packet sent sucessfully
 }
 
-void loop() {
 
-  //Transmitting Function
-  while (Serial.available()) {      // If Serial monitor has data
-    if (buttonPress() == BTN_SELECT){
-      char message[MAX_SIZE] = "Hello World!";
-      HC12.println(message);      // Send that data to HC-12
-      HC12.println(message);      // Send that data to HC-12
+int receivePacket(){
+    Packet pkt;
+
+    //Serial.println("Receive Packet Function Opened");
+
+    // Serial.print("HC12 available bytes: ");
+    // Serial.println(HC12.available());
+    // delay(2000);
+
+    while (HC12.available()) {  // Make sure to receive the whole packet >= sizeof(pkt)
+        
+        HC12.readBytes((char*)&pkt, sizeof(pkt));  // Read the whole packet back into the struct
+        
+        if (pkt.receiverID == NODE_ID) { //Check if the message was meant for this node. If so, process the data
+            Serial.println("\n--- BEGINNING OF TRANSMISSION ---");
+            Serial.print("Received from Player #");
+            Serial.println(pkt.senderID);
+            Serial.print("Command: ");
+            Serial.println(pkt.command);
+            Serial.print("Card Played: ");
+            Serial.print(pkt.cardPlayed.rank);
+            Serial.print(" of ");
+            Serial.println(pkt.cardPlayed.suit);
+            Serial.println(pkt.string);
+            Serial.println("--- END OF TRANSMISSION ---\n");
+            return 1; //Return 1: Data Received
+        }
     }
-  }
-
-  
-  //Receiving Function
-  while (HC12.available()) {        // If HC-12 has data
-
-    // char datareceived[sizeof(HC12.read())/sizeof(int)] = HC12.read();
-    // Serial.println(datareceived);
-
-    // if (isInt(HC12.read() == TRUE){
-      
-    // }
-    Serial.println(HC12.readStringUntil('\n'));      // Send the data to Serial monitor
-  }
-}
-
-int buttonPress() {
-  int x = analogRead(0);
-  int pressed = 0;
-  if (pressed==0){
-    if (x < 100) return BTN_RIGHT; //RIGHT BUTTON
-    else if (x < 250) return BTN_UP; //UP BUTTON
-    else if (x < 400) return BTN_DOWN; //DOWN BUTTON
-    else if (x < 600) return BTN_LEFT; //LEFT BUTTON
-    else if (x < 800) return BTN_SELECT; //SELECT BUTTON
-    pressed = 1;
-  }
-  else{
-    pressed=0;
-    return BTN_NONE;
-  }
-}
-
-int sendPacket(Packet){
-
-  
-
-
-
-  return 1; //Packet sent sucessfully
+    return 0; //Return 0: Nothing received
 }
 
 
 
+void setup() {
+    Serial.begin(9600);
+    HC12.begin(9600);
+    pinMode(BUZZER_PIN, OUTPUT);
+}
+
+void loop() { //Don't use, just call the send and receive functions in your code and pass by reference what you want
+
+    // Transmitting Function
+    sendPacket(0, playCard, testcard, string);
+    delay(5000); //5 second delay before next send
+
+    //Receiving Function
+    receivePacket();
+}
+
+
+
+
+
+
+// int buttonPress() {
+//     int x = analogRead(0);
+//     int pressed = 0;
+//     if (pressed==0){
+//       if (x < 100) return BTN_RIGHT; //RIGHT BUTTON
+//       else if (x < 250) return BTN_UP; //UP BUTTON
+//       else if (x < 400) return BTN_DOWN; //DOWN BUTTON
+//       else if (x < 600) return BTN_LEFT; //LEFT BUTTON
+//       else if (x < 800) return BTN_SELECT; //SELECT BUTTON
+//       pressed = 1;
+//     }
+//     else{
+//       pressed=0;
+//       return BTN_NONE;
+//     }
+// }
 
 
 /////////////////////////
-//////////////////////
-////////////////////////
+
+
+
+
+
+
+
 
 
 /*
