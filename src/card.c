@@ -5,7 +5,11 @@ DATE:         March/02/2025
 
 ATTRIBUTIONS: [chatgpt]
 ******************************************************************************/
-#include "card.h"
+#include "../include/card.h"
+
+int main(void){
+    printf("Hello");
+}
 
 void swap(Card* x, Card* y) {
     Card temp = *x;
