@@ -13,7 +13,7 @@ ATTRIBUTIONS: MREN178 Course Content, GitHub Copilot
 
 //Custom Libraries
 #include <card.h>
-#include <player.h>
+//#include <player.h>
 
 //C Standard Libraries
 #include <stdio.h>
@@ -125,11 +125,11 @@ void setup() {
 void loop() { //Don't use, just call the send and receive functions in your code and pass by reference what you want
 
     // Transmitting Function
-    sendPacket(0, playCard, testcard, string);
+    sendPacket(3, playCard, testcard, string);
     delay(5000); //5 second delay before next send
 
     //Receiving Function
-    receivePacket();
+    //receivePacket();
 }
 
 

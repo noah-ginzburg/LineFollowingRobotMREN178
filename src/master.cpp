@@ -1,10 +1,14 @@
 // include the library code:
+#include <Arduino.h>
 #include <LiquidCrystal.h>
+#include <stdio.h>
+#include <stdlib.h>
 
 // Includes all other libraries
+#include "interface.h"
 #include "player.h"
 #include "card.h"
-#include "interface.h"
+
 
 // Defines all game macros
 #define MAX_PLAYERS 8
@@ -28,118 +32,11 @@ typedef enum gamestate
 
 GameState gs = INITIALIZE;
 
-Player *players = malloc(MAX_PLAYERS * sizeof(Player));
+Player* players = (Player*) malloc(sizeof(Player));
 int numPlayers = 0;
 int currentPlayer = 1;
 
 //////////////////////////////////////////////////
-
-void setup()
-{
-  // set up the LCD's number of columns and rows:
-  lcd.begin(16, 2);
-  // initialize the serial communications:
-  Serial.begin(9600);
-  //////////////////////////////////////////////////////
-
-  gs = PLAYERS_WAIT
-}
-
-void loop()
-{
-  buttonVal = analogRead(analogInPin);
-
-  switch (gs)
-  {
-  case INITIALIZE:
-    ResetGame();
-    break;
-  case PLAYERS_WAIT:
-
-    // Function to wait on player connect (use a while loop, detect when select is presesd to start the game)
-    do
-    {
-
-      // If Received new player from anothre arduino (serial.available)
-      // Detect incoming connection from player, check if command packet says connect
-
-      if (1) // if master received a packet and the command is to add a new player
-      {
-        Player newPlayer;
-        newPlayer.playerNum = numPlayers + 1;
-
-        players[numPlayers++] = newPlayer;
-
-        AutoPrintFull(&lcd, "Player ", 1);
-        AutoPrintFull(&lcd, newPlayer.playerNum, 0);
-        AutoPrintFull(&lcd, "is Connected!", 0);
-
-        delay(5000);
-      }
-
-    } while (numPlayers < MAX_PLAYERS && (numPlayers > 1 && !IsButtonPressed(buttonVal, SELECT))); // may have to implement button debouncing (so it only activates once), this line is just if prevbuttonval != buttonval
-
-    realloc(players, numPlayers * sizeof(Player)); // Check if this line actually works
-
-    // else
-    // start game by setting gs to PlayerTurn
-    currentPlayer = 0;
-    break;
-
-  case PLAYER_TURN:
-
-    // Check end game condition
-    int isGameOver = 0;
-
-    for (int i = 0; i < numPlayers; i++)
-    {
-      if (players[i].curNumCards == 0)
-        isGameOver = 1;
-    }
-
-    if (isGameOver == 1)
-      gs = END_GAME;
-    else
-    {
-
-      // Wait on player option
-      PO playerOption = 0; // for now, use commandpacket later
-      ReadPlayerOption(playerOption);
-
-      // If deck is empty, reshuffle discard, enqueue everything to deck
-
-      currentPlayer++;
-      if (currentPlayer > numPlayers)
-        currentPlayer = 0;
-    }
-
-    break;
-
-  case END_GAME:
-
-    int winner = 0;
-
-    for (int i = 0; i < numPlayers; i++)
-    {
-      if (players[i].curNumCards == 0)
-        winner = i;
-    }
-
-    winningPlayer++;
-
-    // Display Message "PLAYER" winner "WINS! PRess select to restart the game"
-
-    // Detect detect select button press
-    // gs = INITIALIZE;
-
-    break;
-    default break;
-  }
-
-  prevButtonVal = buttonVal;
-
-  delay(50);
-}
 
 void ResetGame()
 {
@@ -170,6 +67,125 @@ void ReadPlayerOption(PO po)
 
     break;
 
-    default break; // or print invalid player option
+    default: break; // or print invalid player option
   }
+}
+
+
+void setup()
+{
+  // set up the LCD's number of columns and rows:
+  lcd.begin(16, 2);
+  // initialize the serial communications:
+  Serial.begin(9600);
+  //////////////////////////////////////////////////////
+  gs = PLAYERS_WAIT;
+}
+
+void loop()
+{
+  Serial.println("test");
+
+  
+  buttonVal = analogRead(analogInPin);
+  SwapMessages(&lcd, millis(), "Message1", "Message2", 3000);
+  lcd.print("test");
+  Serial.println("test");
+
+  switch (gs)
+  {
+  case INITIALIZE:
+    ResetGame();
+    break;
+  case PLAYERS_WAIT:
+
+    // Function to wait on player connect (use a while loop, detect when select is presesd to start the game)
+    do
+    {
+
+      // If Received new player from anothre arduino (serial.available)
+      // Detect incoming connection from player, check if command packet says connect
+
+      if (1) // if master received a packet and the command is to add a new player
+      {
+        Player newPlayer;
+        newPlayer.playerNum = numPlayers + 1;
+
+        players[numPlayers++] = newPlayer;
+
+        //AutoPrintFull(&lcd, "Player ", 1);
+        //AutoPrintFull(&lcd, (char*) newPlayer.playerNum, 0);
+        //AutoPrintFull(&lcd, "is Connected!", 0);
+
+        delay(5000);
+      }
+
+    } while (numPlayers < MAX_PLAYERS && (numPlayers > 1 && !IsButtonPressed(buttonVal, SELECT))); // may have to implement button debouncing (so it only activates once), this line is just if prevbuttonval != buttonval
+
+    realloc(players, numPlayers * sizeof(Player)); // Check if this line actually works
+
+    // else
+    // start game by setting gs to PlayerTurn
+    currentPlayer = 0;
+    break;
+
+  case START_GAME:
+
+  break;
+
+  case PLAYER_TURN:
+
+    // Check end game condition
+    int isGameOver = 0;
+
+    for (int i = 0; i < numPlayers; i++)
+    {
+      if (players[i].curNumCards == 0)
+        isGameOver = 1;
+    }
+
+    if (isGameOver == 1)
+      gs = END_GAME;
+    else
+    {
+
+      // Wait on player option
+      PO playerOption = PLAY; // for now, use commandpacket later
+      ReadPlayerOption(playerOption);
+
+      // If deck is empty, reshuffle discard, enqueue everything to deck
+
+      currentPlayer++;
+      if (currentPlayer > numPlayers)
+        currentPlayer = 0;
+    }
+
+    break;
+
+  case END_GAME:
+
+    int winner = 0;
+
+    for (int i = 0; i < numPlayers; i++)
+    {
+      if (players[i].curNumCards == 0)
+        winner = i;
+    }
+
+    winner++;
+
+    // Display Message "PLAYER" winner "WINS! PRess select to restart the game"
+
+    // Detect detect select button press
+    // gs = INITIALIZE;
+
+    break;
+    default: break;
+  }
+
+  prevButtonVal = buttonVal;
+
+  delay(50);
+
+  
 }

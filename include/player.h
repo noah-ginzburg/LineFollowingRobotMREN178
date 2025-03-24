@@ -10,10 +10,13 @@ ATTRIBUTIONS:
 #ifndef PLAYER.H
 #define PLAYER.H
 
+
 #include "card.h"
+#include "deck.h"
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdbool.h>
 
 #define MAX_HAND_SIZE 10
 
@@ -25,8 +28,6 @@ typedef enum PlayerOption
     SHOW,
     PASS
 } PO;
-
-typedef enum {false, true} bool;
 
 typedef struct player
 {

@@ -20,15 +20,7 @@
 #define DOWN 400
 #define LEFT 600
 #define SELECT 800
-
-typedef enum dirs
-{
-    RIGHT,
-    UP,
-    DOWN,
-    LEFT,
-    SELECT,
-} Direction;
+#define NONE 1023
 
 // Function prototypes
 void AutoPrintFull(LiquidCrystal *lcd, char *str, int fromStart);
