@@ -20,4 +20,5 @@ typedef struct Card {
 void swap(Card *x, Card *y);
 void displaySuit(Card* x);
 void displayRank(Card* x);
+Card* newCard(int rank, int suit);
 #endif

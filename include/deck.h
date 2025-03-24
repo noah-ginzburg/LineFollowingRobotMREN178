@@ -1,21 +1,25 @@
 #ifndef DECK_H
 #define DECK_H
 
-#include "card.h"
+#include "../include/card.h"
 
-typedef struct Deck {
-    int tos;
+typedef enum {false, true} bool;
+
+//struct for a deck
+typedef struct Deck{
+    int front;
+    int rear;
     int count;
-    Card* stack[MAX_CARDS];
+    Card* queue[MAX_CARDS];
 }Deck;
 
 //Function prototypes
-void insert(int rank, int suit, Deck* deck);
-Card* pop(Deck *deck);
-void initDeckCards();
-void initDeck();
-void shuffle();
-void displayDeck();
-
+void enqueue(Card* card, Deck* deck);
+Card* dequeue(Deck* deck);
+void initDeck(Deck* deck);
+void displayDeck(Deck* deck);
+void shuffle(Deck* deck);
+bool isEmpty(Deck* deck);
+bool isFull(Deck* deck);
 
 #endif

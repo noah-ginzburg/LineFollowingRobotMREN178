@@ -11,12 +11,24 @@ int main(void){
     printf("Hello");
 }
 
+//returns a pointer to a new card given the suit and rank
+Card* newCard(int rank, int suit){
+    Card* new; //initalize a new card
+    new->rank = (Rank)(rank);
+    new->suit = (Suit)(suit);
+    return new;
+}
+
+//Given two pointers to cards, the function
+//swaps the card struct they point to
 void swap(Card* x, Card* y) {
     Card temp = *x;
     *x = *y;
     *y = temp;
 }
 
+
+//displays the card suit
 void displaySuit(Card* x){
     switch (x->suit){
         case clubs:
@@ -37,6 +49,7 @@ void displaySuit(Card* x){
     }
 }
 
+//displays the card rank
 void displayRank(Card* x){
     switch (x->rank){
         case A:
