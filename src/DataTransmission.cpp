@@ -3,7 +3,7 @@ FILENAME:     DataTransmission.cpp
 AUTHOR:       Lucas Dejmek
 DATE:         20/03/2025
 
-ATTRIBUTIONS: MREN178 Course Content, GitHub Copilot
+ATTRIBUTIONS: MREN178 Course Content
 ******************************************************************************/
 
 //Arduino Standard Libraries
@@ -13,7 +13,7 @@ ATTRIBUTIONS: MREN178 Course Content, GitHub Copilot
 
 //Custom Libraries
 #include <card.h>
-//#include <player.h>
+#include <player.h>
 
 //C Standard Libraries
 #include <stdio.h>
@@ -29,9 +29,9 @@ SoftwareSerial HC12(10, 11);
 #define NODE_ID 0 //Change this line for every node. NOTE: MASTER IS NODE ZERO (0). ALL PLAYERS ARE NODES 1-7. 
              // WARNING!!! THIS IS NOT PLAYER_ID! NODE_ID IS THE ID OF THE NODE THE CODE IS RUNNING ON, WHEREAS PLAYER_ID IS THE ID OF THE PLAYER GETTING SENT DATA
 
-#define NUM_NODES 4    
-#define INF 9999       
-#define BUZZER_PIN 3   
+// #define NUM_NODES 4    
+// #define INF 9999       
+// #define BUZZER_PIN 3   
 
 #define BTN_RIGHT  0    // Analog Output Value for Right button
 #define BTN_LEFT   410  // Analog Output Value for Left button
@@ -40,15 +40,15 @@ SoftwareSerial HC12(10, 11);
 #define BTN_SELECT 640  // Analog Output Value for Select button
 #define BTN_NONE   1023 // No button pressed
 
-typedef enum commands {playCard = 0, drawCard, showCards} Cmd; //Commands
+typedef enum commands {playCard = 0, drawCard, showCards, addPlayer, assignPlayerNum} Cmd; //Commands
 
 typedef struct packet{
     int senderID; // ID of who the packet is getting sent from
     int receiverID; // ID of who the packet is getting sent to
     Cmd command;
     //Card cardsDealt[10]; //Use this when the master sends the client their initial or updated hand every round
-    Card cardPlayed; //Use this when the player sends the master which card to play
-    char string[50]; //String the master to send to the players - CHANGE LENGTH DEPENDING ON WHAT YOU WANT
+    Card* cardPlayed; //Use this when the player sends the master which card to play
+    char* string[]; //String the master to send to the players - CHANGE LENGTH DEPENDING ON WHAT YOU WANT
 } Packet;
 
 
@@ -62,7 +62,7 @@ char string[50] = "Message Sent Sucessfully!";
 
 //// END OF TEST VALUES
 
-int sendPacket(int receiverID, Cmd command, Card cardPlayed, char string[]){ //Add "Card cardsDealt" later
+int sendPacket(int receiverID, Cmd command, Card* cardPlayed, char* string){ //Add "Card cardsDealt" later
 
     Packet* pkt = (Packet*) malloc(sizeof(Packet)); //Initialize a packet
     pkt->senderID = NODE_ID; // Set the sender ID as that node's ID - CHANGE DEPENDING ON WHICH ARDUINO THE CODE IS RUNNING ON
@@ -71,8 +71,8 @@ int sendPacket(int receiverID, Cmd command, Card cardPlayed, char string[]){ //A
     //pkt->cardsDealt[10] = cardsDealt;
     pkt->cardPlayed = cardPlayed;
     //pkt->cardPlayed.suit = cardPlayed.suit;
-    strncpy(pkt->string, string, sizeof(pkt->string) - 1); // Copy string into pkt->string, leave space for null terminator
-    pkt->string[sizeof(pkt->string) - 1] = '\0'; // Ensure null termination
+    strncpy(*pkt->string, string, sizeof(*pkt->string) - 1); // Copy string into pkt->string, leave space for null terminator
+    pkt->string[sizeof(*pkt->string) - 1] = '\0'; // Ensure null termination
 
     HC12.write((uint8_t*)pkt, sizeof(Packet)); //Create a pointer to the packet and translate it into bits of data. Then send bits over the HC12
     //Serial.println("Packet Sent!");
@@ -83,8 +83,8 @@ int sendPacket(int receiverID, Cmd command, Card cardPlayed, char string[]){ //A
 }
 
 
-int receivePacket(){
-    Packet pkt;
+Packet* receivePacket(){
+    Packet* pkt;
 
     //Serial.println("Receive Packet Function Opened");
 
@@ -96,22 +96,22 @@ int receivePacket(){
         
         HC12.readBytes((char*)&pkt, sizeof(pkt));  // Read the whole packet back into the struct
         
-        if (pkt.receiverID == NODE_ID) { //Check if the message was meant for this node. If so, process the data
-            Serial.println("\n--- BEGINNING OF TRANSMISSION ---");
-            Serial.print("Received from Player #");
-            Serial.println(pkt.senderID);
-            Serial.print("Command: ");
-            Serial.println(pkt.command);
-            Serial.print("Card Played: ");
-            Serial.print(pkt.cardPlayed.rank);
-            Serial.print(" of ");
-            Serial.println(pkt.cardPlayed.suit);
-            Serial.println(pkt.string);
-            Serial.println("--- END OF TRANSMISSION ---\n");
-            return 1; //Return 1: Data Received
+        if (pkt->receiverID == NODE_ID) { //Check if the message was meant for this node. If so, process the data
+            // Serial.println("\n--- BEGINNING OF TRANSMISSION ---");
+            // Serial.print("Received from Player #");
+            // Serial.println(pkt.senderID);
+            // Serial.print("Command: ");
+            // Serial.println(pkt.command);
+            // Serial.print("Card Played: ");
+            // Serial.print(pkt.cardPlayed.rank);
+            // Serial.print(" of ");
+            // Serial.println(pkt.cardPlayed.suit);
+            // Serial.println(pkt.string);
+            // Serial.println("--- END OF TRANSMISSION ---\n");
         }
+        return pkt; //Return 1: Data Received
     }
-    return 0; //Return 0: Nothing received
+    return NULL; //Return 0: Nothing received
 }
 
 
@@ -119,13 +119,13 @@ int receivePacket(){
 void setup() {
     Serial.begin(9600);
     HC12.begin(9600);
-    pinMode(BUZZER_PIN, OUTPUT);
+    //pinMode(BUZZER_PIN, OUTPUT);
 }
 
 void loop() { //Don't use, just call the send and receive functions in your code and pass by reference what you want
 
     // Transmitting Function
-    sendPacket(3, playCard, testcard, string);
+    //sendPacket(3, playCard, testcard, string);
     delay(5000); //5 second delay before next send
 
     //Receiving Function

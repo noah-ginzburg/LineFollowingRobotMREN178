@@ -4,10 +4,12 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+
 // Includes all other libraries
 #include "interface.h"
 #include "player.h"
 #include "card.h"
+#include "DataTransmission.cpp"
 
 // Defines all game macros
 #define MAX_PLAYERS 8
@@ -32,7 +34,7 @@ typedef enum gamestate
   test
 } GameState;
 
-GameState gs = test;
+GameState gs = PLAYERS_WAIT;
 
 Player *players = (Player *)malloc(MAX_PLAYERS * sizeof(Player));
 int numPlayers = 0;
@@ -99,29 +101,44 @@ void loop()
   case PLAYERS_WAIT:
 
     // Function to wait on player connect (use a while loop, detect when select is presesd to start the game)
-    // do
-    // {
-
-    // If Received new player from anothre arduino (serial.available)
-    // Detect incoming connection from player, check if command packet says connect
-
-    if (1) // if master received a packet and the command is to add a new player
+    do
     {
-      Player newPlayer;
-      newPlayer.playerNum = numPlayers + 1;
+      // If Received new player from anothre arduino (serial.available)
+      // Detect incoming connection from player, check if command packet says connect
 
-      players[numPlayers++] = newPlayer;
+      Packet *pkt = receivePacket();
 
-      // AutoPrintFull(&lcd, "Player ", 1);
-      // AutoPrintFull(&lcd, (char*) newPlayer.playerNum, 0);
-      // AutoPrintFull(&lcd, "is Connected!", 0);
+      if (pkt != NULL) // if master received a packet and the command is to add a new player
+      {
+        if (pkt->command == addPlayer && pkt->senderID != -1)
+        {
+          Player *newPlayer = (player *)malloc(sizeof(Player));
+          initPlayer(newPlayer);
 
-      // delay(5000);
-    }
+          newPlayer->playerNum = ++numPlayers; // Autoincrements the player number
 
-    // } while (numPlayers < MAX_PLAYERS && (numPlayers > 1 && !IsButtonPressed(buttonVal, SELECT))); // may have to implement button debouncing (so it only activates once), this line is just if prevbuttonval != buttonval
+          players[numPlayers] = *newPlayer; // Stores the new player
 
-    // realloc(players, numPlayers * sizeof(Player)); // Check if this line actually works
+          AutoPrint(&lcd, "Player ", 1);
+          AutoPrint(&lcd, newPlayer->playerNum, 0);
+          AutoPrint(&lcd, "is Connected!", 0);
+
+          char *playerMsg = "You are Player #";
+          char *pNumStr;
+          sprintf(pNumStr, "%d", newPlayer->playerNum);
+          strcpy(playerMsg, pNumStr);
+
+          // Send back player number to the player
+          sendPacket(newPlayer->playerNum, addPlayer, NULL, playerMsg);
+
+          tone(3, 1000, 200);
+          delay(5000);
+        }
+      }
+
+    } while (numPlayers < MAX_PLAYERS || (numPlayers > 1 && !IsButtonPressed(buttonVal, SELECT))); // may have to implement button debouncing (so it only activates once), this line is just if prevbuttonval != buttonval
+
+    realloc(players, numPlayers * sizeof(Player)); // Check if this line actually works
 
     // else
     // start game by setting gs to PlayerTurn
