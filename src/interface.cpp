@@ -11,6 +11,7 @@ int isActive = 1;
 int isMsg1On = 0;
 int isFirstPass = 1;
 
+
 void AutoPrint(LiquidCrystal *lcd, char *str, int fromStart = 1)
 {
     if (fromStart)
@@ -143,5 +144,3 @@ int FindBtnMapping(int val)
         return NONE;
     }
 }
-
-//test
