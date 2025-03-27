@@ -20,6 +20,9 @@
 // initialize the library by associating any needed LCD interface pin with the arduino pin number it is connected to
 const int rs = 8, en = 9, d4 = 4, d5 = 5, d6 = 6, d7 = 7;
 LiquidCrystal lcd(rs, en, d4, d5, d6, d7);
+const int analogInPin = A0;
+int buttonVal = 0;
+int prevButtonVal = 0;
 
 //initialize menu
 int menu = 1;
@@ -33,6 +36,20 @@ void setup() {
 
 //initializes loop
 void loop() {
+
+  buttonVal = analogRead(analogInPin);
+
+  if (abs(prevButtonVal - buttonVal) > 20){
+    if(IsButtonPressed(buttonVal, SELECT)){
+      AutoPrint(&lcd, "Button Pressed!");
+    }
+  }
+  
+
+  prevButtonVal = buttonVal;
+
+
+  /*
   int x = analogRead(0);
   lcd.setCursor(0,1);
   
@@ -99,5 +116,5 @@ void loop() {
         //run pass function
     break;
     }
-
+*/
 }
