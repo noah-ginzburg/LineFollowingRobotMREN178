@@ -1,9 +1,9 @@
 #ifndef DECK_H
 #define DECK_H
 
-#include "../include/card.h"
+#include <stdbool.h>
 
-typedef enum {false, true} bool;
+#include "card.h"
 
 //struct for a deck
 typedef struct Deck{

@@ -21,7 +21,7 @@ ATTRIBUTIONS: MREN178 Course Content
 #include <stdlib.h>
 
 // LCD Keypad Shield Pins
-LiquidCrystal lcd(8, 9, 4, 5, 6, 7);
+//LiquidCrystal lcd(8, 9, 4, 5, 6, 7);
 
 // HC-12 Wireless Communication
 SoftwareSerial HC12(10, 11);  
@@ -115,7 +115,7 @@ Packet* receivePacket(){
 }
 
 
-
+/*
 void setup() {
     Serial.begin(9600);
     HC12.begin(9600);
@@ -132,6 +132,7 @@ void loop() { //Don't use, just call the send and receive functions in your code
     //receivePacket();
 }
 
+*/
 
 
 

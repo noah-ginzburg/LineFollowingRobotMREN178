@@ -8,10 +8,9 @@ ATTRIBUTIONS:
 ******************************************************************************/
 
 #ifndef PLAYER.H
-#define PLAYER .H
+#define PLAYER.H
 
 #include "card.h"
-#include "deck.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -36,7 +35,6 @@ typedef struct player
 } Player;
 
 bool PlayCard(Player *player, int index, Card *lastPlayed);
-Card *DrawCard(Deck *deck);
 void ShowCards();
 void initPlayer(Player *player);
 void deleteCard(Player *player, int index);
