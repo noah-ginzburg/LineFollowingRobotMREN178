@@ -4,6 +4,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+
 // Includes all other libraries
 #include "interface.h"
 #include "player.h"
@@ -12,6 +13,8 @@
 
 // Defines all game macros
 #define MAX_PLAYERS 8
+
+//Hello Here is an Update
 
 // initialize the library by associating any needed LCD interface pin with the arduino pin number it is connected to
 const int rs = 8, en = 9, d4 = 4, d5 = 5, d6 = 6, d7 = 7;
@@ -126,7 +129,7 @@ void loop()
           strcpy(playerMsg, pNumStr);
 
           // Send back player number to the player
-          sendPacket(newPlayer->playerNum, addPlayer, playerMsg);
+          sendPacket(newPlayer->playerNum, addPlayer, NULL, playerMsg);
 
           tone(3, 1000, 200);
           delay(5000);

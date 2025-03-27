@@ -12,9 +12,9 @@
             "type": "platformio-debug",
             "request": "launch",
             "name": "PIO Debug",
-            "executable": "/Users/lucasdejmek/Documents/Queen's/Semester 2/MREN178 - Data Structs and Algo/Crazy 8s Project/Group2MREN178CourseProject/.pio/build/uno/firmware.elf",
+            "executable": "C:/Users/visak/OneDrive/Documents/GitHub/Group2MREN178CourseProject/.pio/build/uno/firmware.elf",
             "projectEnvName": "uno",
-            "toolchainBinDir": "/Users/lucasdejmek/.platformio/packages/toolchain-atmelavr/bin",
+            "toolchainBinDir": "C:/Users/visak/.platformio/packages/toolchain-atmelavr/bin",
             "internalConsoleOptions": "openOnSessionStart",
             "preLaunchTask": {
                 "type": "PlatformIO",
@@ -25,18 +25,18 @@
             "type": "platformio-debug",
             "request": "launch",
             "name": "PIO Debug (skip Pre-Debug)",
-            "executable": "/Users/lucasdejmek/Documents/Queen's/Semester 2/MREN178 - Data Structs and Algo/Crazy 8s Project/Group2MREN178CourseProject/.pio/build/uno/firmware.elf",
+            "executable": "C:/Users/visak/OneDrive/Documents/GitHub/Group2MREN178CourseProject/.pio/build/uno/firmware.elf",
             "projectEnvName": "uno",
-            "toolchainBinDir": "/Users/lucasdejmek/.platformio/packages/toolchain-atmelavr/bin",
+            "toolchainBinDir": "C:/Users/visak/.platformio/packages/toolchain-atmelavr/bin",
             "internalConsoleOptions": "openOnSessionStart"
         },
         {
             "type": "platformio-debug",
             "request": "launch",
             "name": "PIO Debug (without uploading)",
-            "executable": "/Users/lucasdejmek/Documents/Queen's/Semester 2/MREN178 - Data Structs and Algo/Crazy 8s Project/Group2MREN178CourseProject/.pio/build/uno/firmware.elf",
+            "executable": "C:/Users/visak/OneDrive/Documents/GitHub/Group2MREN178CourseProject/.pio/build/uno/firmware.elf",
             "projectEnvName": "uno",
-            "toolchainBinDir": "/Users/lucasdejmek/.platformio/packages/toolchain-atmelavr/bin",
+            "toolchainBinDir": "C:/Users/visak/.platformio/packages/toolchain-atmelavr/bin",
             "internalConsoleOptions": "openOnSessionStart",
             "loadMode": "manual"
         }
