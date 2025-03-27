@@ -1,55 +1,92 @@
+/******************************************************************************
+FILENAME:     deck.c
+Author:       Visakan Makilrajah
+DATE:         March/23/2025
+NOTES:        Queue implementation of the deck of cards
+ATTRIBUTIONS: 
+******************************************************************************/
 #include "deck.h"
-
-//set top pointer to -1
-void initDeck(Deck* deck){
-    deck->count = 0;
-    deck->tos = -1;
-}
+#include <time.h>
 
 //initialize the deck of cards
-void initDeckCards(Deck* deck) {
+void initDeck(Deck* deck) {
+    deck->front = 0;
+    deck->rear = -1;
+    deck->count = 0;
+
     for (int i = 0; i < 4; i++) {
         for (int j = 0; j < 13; j++) {
-            insert(j, i, deck);
+            Card* new = newCard(j, i); //create a new card
+            enqueue(new, deck); //add to the deck
         }
     }
 }
 
-//shuffle deck of cards using Fisher-Yates Shuffle
-//credit: chatGPT
-void shuffle(Deck* deck) {
-    //random number generator
-    srand(time(NULL));
+//adds card to the queue with wrap around implemented
+void enqueue(Card* card, Deck* deck){
+    if (deck->count >= MAX_CARDS) return;
+    deck->rear = ++(deck->rear) % MAX_CARDS;
+    (deck->count)++;
+    deck->queue[deck->rear] = card;    
+};
 
-    for (int i = MAX_CARDS - 1; i > 0; i--) {
-        // Generate a random index from 0 to i
-        int j = rand() % (i + 1);
-        // Swap the elements at index i and j
-        swap(&(deck->stack[i]), &(deck->stack[j]));
-    }
+//removes card from the queue with wrap around implemented
+Card* dequeue(Deck* deck){
+    if (deck->count <= 0) return NULL;
+    Card* pick = deck->queue[deck->front];
+    deck->front = ++(deck->front) % MAX_CARDS;
+    return pick;
 }
 
-void displayDeck(Deck* deck) {
-    for (int i = 0; i < 4; i++){
-        displaySuit(deck->stack[i*13]);
-        for (int j = 0; j < 13; j++){
-            displayRank(deck->stack[i*13 + j]);
-        }
+//displays the deck of cards
+void displayDeck(Deck* deck){
+    for (int i = 0; i < deck->count; i++){
+        int index = (deck->front + i) % MAX_CARDS;
+        displaySuit(deck->queue[index]);
+        displayRank(deck->queue[index]);
         printf("\n");
     }
-    //apply switch case to display the corresponding rank and suit
-    //display in rows of thirteen
 }
 
-//insert new card into the array
-void insert(int rank, int suit, Deck* deck) {
-    if (deck->tos == MAX_CARDS-1) return;
-    deck->stack[(deck->tos)++]->suit = (Suit)suit;
-    deck->stack[(deck->tos)]->rank = (Rank)rank;
-    (deck->count)++;
-}
+//checks if queue is empty
+bool isEmpty(Deck* deck){
+    if (deck->count == 0) return true;
+    return false;
+};
 
-//removes card from the deck
-Card* pop(Deck* deck){
-    if (deck->tos != -1) return deck->stack[(deck->tos)--];
+//checks if queue is full
+bool isFull(Deck* deck){
+    if (deck->count == MAX_CARDS) return true;
+    return false;
+};
+
+
+//shuffle deck of cards using Fisher-Yates Shuffle
+//chatgpt was used to implement Fisher-Yates Shuffle
+void shuffle(Deck* deck) {
+
+    //random number generator
+    srand((unsigned int)time(NULL));
+    int size = deck->count;
+    Card* temp[size]; //an array to store the cards
+    
+    int index = 0;
+    //dequeue all the cards
+    while(!IsEmpty(deck)){
+        temp[index++] = dequeue(deck);
+    }
+
+    //sort the cards in the temp array
+    for (int i = size-1; i > 0; i--) {
+        // Generate a random index j such that 0 <= j <= i
+        int j = rand() % (i + 1);
+        // Swap temp[i] with temp[j]
+        swap(temp[i], temp[j]);
+    }
+
+    //enqueue all the cards back in the deck
+    int added = 0;
+    while(added < size){
+        enqueue(temp[added++], deck);
+    }
 }

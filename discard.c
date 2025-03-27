@@ -1,3 +1,4 @@
+/******************************************************************************
 FILENAME:     card.c
 Author:       Visakan Makilrajah
 DATE:         March/23/2025
@@ -5,7 +6,7 @@ NOTES:        Stack implementation of the discard pile
 ATTRIBUTIONS: 
 ******************************************************************************/
 
-#include "../include/discard.h"
+#include "discard.h"
 
 int main(void){
 }
