@@ -126,7 +126,7 @@ void loop()
           strcpy(playerMsg, pNumStr);
 
           // Send back player number to the player
-          sendPacket(newPlayer->playerNum, addPlayer, playerMsg);
+          sendPacket(newPlayer->playerNum, addPlayer, NULL, playerMsg);
 
           tone(3, 1000, 200);
           delay(5000);
