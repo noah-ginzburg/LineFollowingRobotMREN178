@@ -13,7 +13,7 @@ ATTRIBUTIONS: MREN178 Course Content, GitHub Copilot
 
 //Custom Libraries
 #include <card.h>
-//#include <player.h>
+#include <player.h>
 
 //C Standard Libraries
 #include <stdio.h>
