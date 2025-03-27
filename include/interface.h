@@ -23,6 +23,7 @@
 
 // Function prototypes
 void AutoPrint(LiquidCrystal *lcd, char *str, int fromStart = 1);
+void AutoPrint(LiquidCrystal *lcd, int val, int fromStart = 0);
 void ManualPrint(LiquidCrystal *lcd, char *str, int row, int col, int clear);
 void SwapMessages(LiquidCrystal *lcd, unsigned long totalTime, char *str1, char *str2, unsigned int delayTime);
 void ThrowError(LiquidCrystal *lcd, char *errMsg);

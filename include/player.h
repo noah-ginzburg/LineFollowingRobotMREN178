@@ -8,7 +8,7 @@ ATTRIBUTIONS:
 ******************************************************************************/
 
 #ifndef PLAYER.H
-#define PLAYER.H
+#define PLAYER .H
 
 #include "card.h"
 #include "deck.h"
@@ -19,7 +19,7 @@ ATTRIBUTIONS:
 
 #define MAX_HAND_SIZE 10
 
-//player has three options, they can play a card, draw, view their cards or pass their turn
+// player has three options, they can play a card, draw, view their cards or pass their turn
 typedef enum PlayerOption
 {
     PLAY,
@@ -30,16 +30,16 @@ typedef enum PlayerOption
 
 typedef struct player
 {
-    Card* cards[MAX_HAND_SIZE];
+    Card *cards[MAX_HAND_SIZE];
     int curNumCards;
     int playerNum;
 } Player;
 
-bool PlayCard(Player* player, int index, Card* lastPlayed);
-Card* DrawCard(Deck* deck);
+bool PlayCard(Player *player, int index, Card *lastPlayed);
+Card *DrawCard(Deck *deck);
 void ShowCards();
-void initPlayer(Player* player, int num);
-void deleteCard(Player* player, int index);
+void initPlayer(Player *player);
+void deleteCard(Player *player, int index);
 // Not Done Yet,
 
 #endif

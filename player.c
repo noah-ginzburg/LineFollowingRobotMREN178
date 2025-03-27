@@ -59,10 +59,15 @@ void ShowCards(Player *player)
     // Simply display the cards in the player's hand
 }
 
-void initPlayer(Player *player, int num)
+void initPlayer(Player *player)
 {
+    for (int i = 0; i < MAX_HAND_SIZE; i++)
+    {
+        player->cards[i] = NULL;
+    }
+
     player->curNumCards = 0;
-    int playerNum = num;
+    player->playerNum = -1;
 }
 
 // deletes a card from the player's hand
