@@ -4,7 +4,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-
 // Includes all other libraries
 #include "interface.h"
 #include "player.h"
@@ -14,7 +13,7 @@
 // Defines all game macros
 #define MAX_PLAYERS 8
 
-//Hello Here is an Update
+// Hello Here is an Update
 
 // initialize the library by associating any needed LCD interface pin with the arduino pin number it is connected to
 const int rs = 8, en = 9, d4 = 4, d5 = 5, d6 = 6, d7 = 7;
@@ -113,7 +112,7 @@ void loop()
         if (pkt->command == addPlayer && pkt->senderID != -1)
         {
           Player *newPlayer = (player *)malloc(sizeof(Player));
-          initPlayer(newPlayer);
+          //initPlayer(newPlayer);
 
           newPlayer->playerNum = ++numPlayers; // Autoincrements the player number
 
