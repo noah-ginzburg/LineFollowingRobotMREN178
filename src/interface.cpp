@@ -11,7 +11,7 @@ int isActive = 1;
 int isMsg1On = 0;
 int isFirstPass = 1;
 
-void AutoPrintFull(LiquidCrystal *lcd, char *str, int fromStart)
+void AutoPrint(LiquidCrystal *lcd, char *str, int fromStart = 1)
 {
     if (fromStart)
     {
@@ -19,7 +19,6 @@ void AutoPrintFull(LiquidCrystal *lcd, char *str, int fromStart)
         lcd->home();
     }
 
-    int curChar = 0;
     int strLength = strlen(str);
 
     if (strLength > rows * cols)
@@ -59,7 +58,7 @@ void ManualPrint(LiquidCrystal *lcd, char *str, int row, int col, int clear)
     }
 }
 
-void SwapMessages(LiquidCrystal *lcd, unsigned long totalTime, char *str1, char *str2, int delayTime)
+void SwapMessages(LiquidCrystal *lcd, unsigned long totalTime, char *str1, char *str2, unsigned int delayTime)
 {
     if (isFirstPass)
     {
@@ -75,6 +74,10 @@ void SwapMessages(LiquidCrystal *lcd, unsigned long totalTime, char *str1, char 
             tInit = totalTime;
             isMsg1On = !isMsg1On;
             isActive = 1;
+
+            Serial.println("Switching Messages...");
+            Serial.println(totalTime);
+            Serial.println("");
         }
     }
     else

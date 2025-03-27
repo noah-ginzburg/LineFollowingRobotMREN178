@@ -12,7 +12,6 @@
 #define rows 2
 #define cols 16
 
-#define AutoPrint(lcd, str) AutoPrintFull(lcd, str, 1) // Acts as a secondary function call, making fromStart an optional parameter
 #define stdErrMsg "Err: str display"
 
 #define RIGHT 60
@@ -23,9 +22,9 @@
 #define NONE 1023
 
 // Function prototypes
-void AutoPrintFull(LiquidCrystal *lcd, char *str, int fromStart);
+void AutoPrint(LiquidCrystal *lcd, char *str, int fromStart = 1);
 void ManualPrint(LiquidCrystal *lcd, char *str, int row, int col, int clear);
-void SwapMessages(LiquidCrystal *lcd, unsigned long totalTime, char *str1, char *str2, int delayTime);
+void SwapMessages(LiquidCrystal *lcd, unsigned long totalTime, char *str1, char *str2, unsigned int delayTime);
 void ThrowError(LiquidCrystal *lcd, char *errMsg);
 int IsButtonPressed(int analogVal, int desiredButton);
 int FindBtnMapping(int val);

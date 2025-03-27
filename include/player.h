@@ -10,7 +10,6 @@ ATTRIBUTIONS:
 #ifndef PLAYER.H
 #define PLAYER.H
 
-
 #include "card.h"
 #include "deck.h"
 
