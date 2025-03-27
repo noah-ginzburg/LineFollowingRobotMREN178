@@ -15,6 +15,7 @@
 #include "interface.h"
 #include "player.h"
 #include "card.h"
+#include "DataTransmission.h"
 
 // initialize the library by associating any needed LCD interface pin with the arduino pin number it is connected to
 const int rs = 8, en = 9, d4 = 4, d5 = 5, d6 = 6, d7 = 7;
@@ -22,6 +23,10 @@ LiquidCrystal lcd(rs, en, d4, d5, d6, d7);
 const int analogInPin = A0;
 int buttonVal = 0;
 int prevButtonVal = 0;
+
+int pNum = -1;
+
+bool isConnected = false;
 
 // initialize menu
 int menu = 1;
@@ -42,10 +47,31 @@ void loop()
 
   if (abs(prevButtonVal - buttonVal) > 20)
   {
-    if (IsButtonPressed(buttonVal, SELECT))
+    if (IsButtonPressed(buttonVal, SELECT) && isConnected == false)
     {
       AutoPrint(&lcd, "Button Pressed!");
+
+      sendPacket(pNum, 0, addPlayer, NULL, "\0");
     }
+  }
+
+  Packet *incomingPacket = receivePacket();
+
+  switch (incomingPacket->command)
+  {
+  case addPlayer:
+    isConnected = true;
+    pNum = incomingPacket->receiverID;
+
+    AutoPrint(&lcd, incomingPacket->string, 1);
+    tone(3, 500, 200);
+    noTone(3);
+    delay(5000);
+
+    break;
+
+  default:
+    break;
   }
 
   prevButtonVal = buttonVal;
