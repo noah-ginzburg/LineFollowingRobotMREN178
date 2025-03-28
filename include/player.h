@@ -7,8 +7,8 @@ DATE:         March/16/2025
 ATTRIBUTIONS:
 ******************************************************************************/
 
-#ifndef PLAYER.H
-#define PLAYER.H
+#ifndef PLAYER_H
+#define PLAYER_H
 
 #include "card.h"
 

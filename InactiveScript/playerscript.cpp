@@ -12,10 +12,10 @@
 #include <stdlib.h>
 
 // Includes all other libraries
+#include "DataTransmission.h"
 #include "interface.h"
 #include "player.h"
 #include "card.h"
-#include "DataTransmission.h"
 
 // initialize the library by associating any needed LCD interface pin with the arduino pin number it is connected to
 const int rs = 8, en = 9, d4 = 4, d5 = 5, d6 = 6, d7 = 7;
@@ -31,31 +31,33 @@ bool isConnected = false;
 // initialize menu
 int menu = 1;
 
+Card testCard = {Five, hearts}; // Create a Card object
+Card* testCardPtr = &testCard;     // Assign its address to the pointer
+
 // prints 'Action:' on LCD
 void setup()
 {
   lcd.begin(16, 2);
+  HC12.begin(9600);
+  Serial.begin(9600);
   lcd.setCursor(0, 0);
   lcd.print("Action:");
 }
 
 // initializes loop
-void loop()
-{
+void loop(){
+  //Serial.println("Inside Loop");
+  buttonVal = analogRead(analogInPin);
 
-  // buttonVal = analogRead(analogInPin);
-
-  if (abs(prevButtonVal - buttonVal) > 20)
-  {
-    if (IsButtonPressed(buttonVal, SELECT) && isConnected == false)
-    {
+  if (abs(prevButtonVal - buttonVal) > 20){
+    if (IsButtonPressed(buttonVal, SELECT) && isConnected == false){
       AutoPrint(&lcd, "Button Pressed!");
-
-      sendPacket(pNum, 0, addPlayer, NULL, "\0");
+      sendPacket(0, 1); //playCard, testCardPtr, string
     }
   }
-  /*
-
+  prevButtonVal = buttonVal;
+}
+/*
   //Packet *incomingPacket = receivePacket();
 
   switch (incomingPacket->command)
@@ -73,11 +75,8 @@ void loop()
 
   default:
     break;
-  }*/
+  }
 
-  prevButtonVal = buttonVal;
-
-  /*
   int x = analogRead(0);
   lcd.setCursor(0,1);
 
@@ -145,4 +144,4 @@ void loop()
     break;
     }
 */
-}
+//}
