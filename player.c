@@ -18,26 +18,6 @@ bool PlayCard(Player *player, int index, Card *lastPlayed)
     3. wait for hc12 to be available for feedback
     -> the master will send feedback, if it is good feedback, end the function. if not, keep looping until a valid option is chosen
     */
-
-    // Get the card to be played
-    Card *toPlay = player->cards[index];
-
-    // Check if the card to be play follows the game conditions
-    if (toPlay->rank == Eight)
-    {
-        // add prompt to select the suit
-        deleteCard(player, index);
-        return true;
-    }
-    else if (toPlay->suit == lastPlayed->suit || toPlay->rank == lastPlayed->rank)
-    {
-        deleteCard(player, index);
-        return true;
-    }
-    else
-    {
-        return false;
-    }
 }
 
 Card *DrawCard(Deck *deck)
@@ -61,23 +41,22 @@ void ShowCards(Player *player)
 
 void initPlayer(Player *player)
 {
-    for (int i = 0; i < MAX_HAND_SIZE; i++)
-    {
-        player->cards[i] = NULL;
-    }
+    player->hand = (CardLL *)malloc(sizeof(CardLL)); // allocate memory for the player's hand
+    player->hand->head = NULL;                       // initialize the head of the linked list to NULL
 
-    player->curNumCards = 0;
+    player->handSize = 0;
     player->playerNum = -1;
 }
 
 // deletes a card from the player's hand
 // reorganizes the array, so it sorted
-void deleteCard(Player *player, int index)
+void deleteCard(Player *player, Card card)
 {
-    for (;; index < MAX_HAND_SIZE - 1)
-    {
-        player->cards[index] = player->cards[index++];
-    }
-    player->cards[player->curNumCards - 1] = NULL;
-    player->curNumCards--;
+    CardNode *node = searchNode(player->hand->head, card); // search for the node to delete
+
+    node = deleteNode(node);
+
+    free(node);
+
+    player->handSize--;
 }

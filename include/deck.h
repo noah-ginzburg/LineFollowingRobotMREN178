@@ -4,13 +4,14 @@
 #include <stdbool.h>
 
 #include "card.h"
+#include "hand.h"
 
-//struct for a deck
+// struct for a deck
 typedef struct Deck{
     int front;
     int rear;
     int count;
-    Card* queue[MAX_CARDS];
+    CardNode* queue[MAX_CARDS];
 }Deck;
 
 //Function prototypes
@@ -21,5 +22,6 @@ void displayDeck(Deck* deck);
 void shuffle(Deck* deck);
 bool isEmpty(Deck* deck);
 bool isFull(Deck* deck);
+
 
 #endif

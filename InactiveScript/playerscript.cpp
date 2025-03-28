@@ -26,26 +26,25 @@ int prevButtonVal = 0;
 
 int pNum = -1;
 
+extern SoftwareSerial HC12;
 bool isConnected = false;
 
 // initialize menu
 int menu = 1;
 
-
 ////// TEST VALUES //////
 
-// Next two lines create a pointer to a card that is passed on 
+// Next two lines create a pointer to a card that is passed on
 // into the sendPacket function to simulate a player playing or receiving a card
 Card testCard = {Five, hearts};
-Card* testCardPtr = &testCard;
+Card *testCardPtr = &testCard;
 
-Card* testHand[10] = {&testCard}; //This creates an array of pointers to cards and sets them all to the 5 of Hearts.
+Card *testHand[10] = {&testCard}; // This creates an array of pointers to cards and sets them all to the 5 of Hearts.
 // This simulates the master sending the player their hand at the beginning of the game
 
 char string[50] = "Message";
 
 ///// END OF TEST VALUES //////
-
 
 // prints 'Action:' on LCD
 void setup()
@@ -58,14 +57,17 @@ void setup()
 }
 
 // initializes loop
-void loop(){
-  //Serial.println("Inside Loop");
+void loop()
+{
+  // Serial.println("Inside Loop");
   buttonVal = analogRead(analogInPin);
 
-  if (abs(prevButtonVal - buttonVal) > 20){
-    if (IsButtonPressed(buttonVal, SELECT) && isConnected == false){
+  if (abs(prevButtonVal - buttonVal) > 20)
+  {
+    if (IsButtonPressed(buttonVal, SELECT) && isConnected == false)
+    {
       AutoPrint(&lcd, "Button Pressed!");
-      sendPacket(0, 1, playCard, testCardPtr, testHand, string);
+      sendPacket(pNum, 0, addPlayer, NULL, NULL, NULL);
     }
   }
   prevButtonVal = buttonVal;

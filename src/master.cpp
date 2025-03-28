@@ -9,6 +9,8 @@
 #include "player.h"
 #include "card.h"
 #include "DataTransmission.h"
+#include "deck.h"
+#include "hand.h"
 
 // Defines all game macros
 #define MAX_PLAYERS 8
@@ -39,7 +41,7 @@ Player *players = (Player *)malloc(MAX_PLAYERS * sizeof(Player));
 int numPlayers = 0;
 int currentPlayer = 1;
 
-Packet *pkt = NULL;
+Deck *deck; // This is the deck of cards that will be used in the game
 
 //////////////////////////////////////////////////
 
@@ -81,36 +83,27 @@ void setup()
 {
   // set up the LCD's number of columns and rows:
   lcd.begin(16, 2);
-  HC12.begin(9600);
   // initialize the serial communications:
   Serial.begin(9600);
   //////////////////////////////////////////////////////
-  //gs = PLAYERS_WAIT;
+  gs = PLAYERS_WAIT;
+
+  deck = (Deck *)malloc(sizeof(Deck));
 }
 
-void loop() {
-  pkt = receivePacket();
+void loop()
+{
 
-  //Serial.println("Assigned Pointer");
-
-  if (pkt != NULL){
-    //Serial.println("Received Packet");
-    AutoPrint(&lcd, "Player #", 1);
-    AutoPrint(&lcd, pkt->senderID, 0);
-    AutoPrint(&lcd, "Sent a Message", 0);
-  }
-}
-  //buttonVal = analogRead(analogInPin);
+  buttonVal = analogRead(analogInPin);
 
   // SwapMessages(&lcd, millis(), "Message1", "Message2", 3000);
 
-  // switch (gs)
-  // {
-  // case INITIALIZE:
-  //   ResetGame();
-  //   break;
-  // case PLAYERS_WAIT:
-  // }
+  switch (gs)
+  {
+  case INITIALIZE:
+    ResetGame();
+    break;
+  case PLAYERS_WAIT:
 
     // Function to wait on player connect (use a while loop, detect when select is presesd to start the game)
     // do
@@ -118,15 +111,17 @@ void loop() {
     // If Received new player from anothre arduino (serial.available)
     // Detect incoming connection from player, check if command packet says connect
 
-      /*
+    Packet *pkt = receivePacket();
+
+    if (pkt != NULL)
+      Serial.println("Received Packet");
+
     if (pkt != NULL) // if master received a packet and the command is to add a new player
     {
       if (pkt->command == addPlayer && pkt->senderID == -1)
       {
-        if (pkt->command == addPlayer && pkt->senderID == -1)
-        {
-          Player *newPlayer = (player *)malloc(sizeof(Player));
-          // initPlayer(newPlayer);
+        Player *newPlayer = (player *)malloc(sizeof(Player));
+        // initPlayer(newPlayer);
 
         newPlayer->playerNum = ++numPlayers; // Autoincrements the player number
 
@@ -137,19 +132,19 @@ void loop() {
         AutoPrint(&lcd, "is Connected!", 0);
 
         char *playerMsg = "You are Player #";
-        char *pNumStr;
+        char pNumStr[2];
         sprintf(pNumStr, "%d", newPlayer->playerNum);
+        pNumStr[1] = '\0'; // Null-terminate the string
         strcpy(playerMsg, pNumStr);
 
-          // Send back player number to the player
-          sendPacket(0, newPlayer->playerNum, addPlayer, NULL, playerMsg);
+        // Send back player number to the player
+        sendPacket(0, newPlayer->playerNum, addPlayer, NULL, NULL, playerMsg);
 
-          tone(3, 1000, 200);
-          noTone(3);
-          delay(5000);
-        }
+        tone(3, 1000, 200);
+        noTone(3);
+        delay(5000);
       }
-    }
+        }
 
     //} while (numPlayers < MAX_PLAYERS || (numPlayers > 1 && !IsButtonPressed(buttonVal, SELECT))); // may have to implement button debouncing (so it only activates once), this line is just if prevbuttonval != buttonval
 
@@ -171,7 +166,7 @@ void loop() {
 
     for (int i = 0; i < numPlayers; i++)
     {
-      if (players[i].curNumCards == 0)
+      if (players[i].handSize == 0)
         isGameOver = 1;
     }
 
@@ -199,7 +194,7 @@ void loop() {
 
     for (int i = 0; i < numPlayers; i++)
     {
-      if (players[i].curNumCards == 0)
+      if (players[i].handSize == 0)
         winner = i;
     }
 
@@ -218,6 +213,4 @@ void loop() {
   prevButtonVal = buttonVal;
 
   delay(50);
-
-
-  */
+}

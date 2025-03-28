@@ -15,8 +15,15 @@
 #include <string.h>
 #include <stdlib.h>
 
-// HC-12 Wireless Communication
-extern SoftwareSerial HC12;
+// LCD Keypad Shield Pins
+// LiquidCrystal lcd(8, 9, 4, 5, 6, 7);
+
+// #define NODE_ID 0 //Change this line for every node. NOTE: MASTER IS NODE ZERO (0). ALL PLAYERS ARE NODES 1-7.
+//  WARNING!!! THIS IS NOT PLAYER_ID! NODE_ID IS THE ID OF THE NODE THE CODE IS RUNNING ON, WHEREAS PLAYER_ID IS THE ID OF THE PLAYER GETTING SENT DATA
+
+// #define NUM_NODES 4
+// #define INF 9999
+// #define BUZZER_PIN 3
 
 #define BTN_RIGHT 0    // Analog Output Value for Right button
 #define BTN_LEFT 410   // Analog Output Value for Left button
@@ -25,18 +32,27 @@ extern SoftwareSerial HC12;
 #define BTN_SELECT 640 // Analog Output Value for Select button
 #define BTN_NONE 1023  // No button pressed
 
-typedef enum commands {playCard = 0, drawCard, addPlayer, showCards} Cmd; //Commands
+typedef enum commands
+{
+    playCard = 0,
+    drawCard,
+    showCards,
+    addPlayer,
+    assignPlayerNum
+} Cmd; // Commands
 
-typedef struct packet {
+typedef struct packet
+{
     int senderID;   // ID of who the packet is getting sent from
     int receiverID; // ID of who the packet is getting sent to
     Cmd command;
-    Card cardSent; // Use this when the player sends the master which card to play
-    Card cardsDealt[10]; //Use this when the master sends the client their initial or updated hand every round
-    char string[50];     // String the master to send to the players - CHANGE LENGTH DEPENDING ON WHAT YOU WANT
+    // Card* cardsDealt[10]; //Use this when the master sends the client their initial or updated hand every round
+    Player *player; // Use this when the master sends the client their initial or updated hand every round
+    CardNode* cardNode; // Use this when the master sends the client their initial or updated hand every round
+    char *string; // String the master to send to the players - CHANGE LENGTH DEPENDING ON WHAT YOU WANT
 } Packet;
 
-int sendPacket(int senderID, int receiverID, Cmd command, Card* cardSent, Card* cardsDealt[], char string[]);
-Packet* receivePacket();
+int sendPacket(int senderID, int receiverID, Cmd command, Player *player, CardNode *cardNode, char *string);
+Packet *receivePacket();
 
 #endif

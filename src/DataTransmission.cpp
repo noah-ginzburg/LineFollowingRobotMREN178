@@ -9,13 +9,13 @@ ATTRIBUTIONS: MREN178 Course Content, GitHub Copilot
 #include "DataTransmission.h"
 
 // LCD Keypad Shield Pins
-//LiquidCrystal lcd(8, 9, 4, 5, 6, 7);
+// LiquidCrystal lcd(8, 9, 4, 5, 6, 7);
 
 // HC-12 Wireless Communication
 SoftwareSerial HC12(10, 11);
 
-#define NODE_ID 1 //Change this line for every node. NOTE: MASTER IS NODE ZERO (0). ALL PLAYERS ARE NODES 1-7. 
-             // WARNING!!! THIS IS NOT PLAYER_ID! NODE_ID IS THE ID OF THE NODE THE CODE IS RUNNING ON, WHEREAS PLAYER_ID IS THE ID OF THE PLAYER GETTING SENT DATA
+#define NODE_ID 1 // Change this line for every node. NOTE: MASTER IS NODE ZERO (0). ALL PLAYERS ARE NODES 1-7.
+// WARNING!!! THIS IS NOT PLAYER_ID! NODE_ID IS THE ID OF THE NODE THE CODE IS RUNNING ON, WHEREAS PLAYER_ID IS THE ID OF THE PLAYER GETTING SENT DATA
 
 //// TEST VALUES TO SEE IF PROGRAM WORKS
 
@@ -23,45 +23,47 @@ SoftwareSerial HC12(10, 11);
 // Card testCard = {Five, hearts}; // Create a Card object
 // Card* testCardPtr = &testCard;     // Assign its address to the pointer
 // char string[50] = "Message Sent Sucessfully!";
-//String teststring;
+// String teststring;
 
 //// END OF TEST VALUES
 
 Packet receivedPkt;
 
-int sendPacket(int senderID, int receiverID, Cmd command, Card* cardSent, Card* cardsDealt[], char string[]){
-    
-    Packet* pkt = (Packet*) malloc(sizeof(Packet)); //Initialize a packet
-    
-    pkt->senderID = senderID; // Set the sender ID as that node's ID - CHANGE DEPENDING ON WHICH ARDUINO THE CODE IS RUNNING ON
-    pkt->receiverID = receiverID;  // Set the variables of the packet to what was passed into the function
-    pkt->command = command;
-    for (int i=0; i<10; i++) pkt->cardsDealt[i] = *cardsDealt[i]; 
-            // Dereference the inputted pointers to the dealt hand and store their values in the ith positions of the packet's array of Cards
-    pkt->cardSent = *cardSent; // Dereference the inputted pointer and store its value in the packet's card spot
-    strcpy(pkt->string, string); // Copy string into pkt->string, leave space for null terminator
-    pkt->string[sizeof(pkt->string) - 1] = '\0'; // Ensure null termination
-    HC12.write((uint8_t*)pkt, sizeof(Packet)); //Create a pointer to the packet and translate it into bits of data. Then send bits over the HC12
-    
-    free(pkt); //Free the memory used by malloc after sending message
+int sendPacket(int senderID, int receiverID, Cmd command, Player *player, CardNode *cardNode, char *string)
+{
 
-    return 1; //Packet sent sucessfully
+    Packet *pkt = (Packet *)malloc(sizeof(Packet)); // Initialize a packet
+
+    pkt->senderID = senderID;     // Set the sender ID as that node's ID - CHANGE DEPENDING ON WHICH ARDUINO THE CODE IS RUNNING ON
+    pkt->receiverID = receiverID; // Set the variables of the packet to what was passed into the function
+    pkt->command = command;
+
+    pkt->player = player;        // Set the player to the player passed in
+    pkt->cardNode = cardNode;    // Set the cardNode to the cardNode passed in
+    strcpy(pkt->string, string); // Copy string into pkt->string
+
+    // pkt->string[sizeof(pkt->string) - 1] = '\0'; // Ensure null termination
+
+    HC12.write((uint8_t *)pkt, sizeof(Packet)); // Create a pointer to the packet and translate it into bits of data. Then send bits over the HC12
+
+    free(pkt); // Free the memory used by malloc after sending message
+
+    return 1; // Packet sent sucessfully
 }
 
-
-Packet* receivePacket(){
-    while (HC12.available()) {  // Make sure to receive the whole packet >= sizeof(pkt)
-        HC12.readBytes((char*)&receivedPkt, sizeof(receivedPkt));  // Read the whole packet back into the struct
+Packet *receivePacket()
+{
+    while (HC12.available())
+    {                                                              // Make sure to receive the whole packet >= sizeof(pkt)
+        HC12.readBytes((char *)&receivedPkt, sizeof(receivedPkt)); // Read the whole packet back into the struct
         // Serial.println("SenderID: ");
         // Serial.println(receivedPkt.senderID);
         // Serial.println("ReceiverID: ");
         // Serial.println(receivedPkt.receiverID);
-        return &receivedPkt; //Return 1: Data Received
+        return &receivedPkt; // Return 1: Data Received
     }
-    return NULL; //Return 0: Nothing received
+    return NULL; // Return 0: Nothing received
 }
-
-
 
 // void setup() {
 //     Serial.begin(9600);
@@ -78,11 +80,6 @@ Packet* receivePacket(){
 //     //Receiving Function
 //     //receivePacket();
 // }
-
-
-
-
-
 
 // int buttonPress() {
 //     int x = analogRead(0);
@@ -101,36 +98,27 @@ Packet* receivePacket(){
 //     }
 // }
 
-
 /////////////////////////
-
-
-
-
-
-
-
-
 
 /*
 
 
 // Each node in your network needs to have a unique id.  Change NODE_ID
 // to be a value between 0 and NUM_NODES-1
-const int NODE_ID = 0;  
+const int NODE_ID = 0;
 
-// This is an arbitrary adjacency matrix denoting the topology of the network 
+// This is an arbitrary adjacency matrix denoting the topology of the network
 int graph[NUM_NODES][NUM_NODES] = {
-    {0, 1, INF, 2},  
-    {1, 0, 3, INF},  
-    {INF, 3, 0, 1},  
-    {2, INF, 1, 0}   
+    {0, 1, INF, 2},
+    {1, 0, 3, INF},
+    {INF, 3, 0, 1},
+    {2, INF, 1, 0}
 };
 
 int destinationNode = 0;
-char message[MAX_MSG_LEN + 1];  
-int cursorPos = 0;   
-char selectedChar = 'A';  
+char message[MAX_MSG_LEN + 1];
+int cursorPos = 0;
+char selectedChar = 'A';
 
 void setup() {
     Serial.begin(9600);
@@ -139,7 +127,7 @@ void setup() {
     pinMode(BUZZER_PIN, OUTPUT);
 
     memset(message, ' ', MAX_MSG_LEN);
-    message[MAX_MSG_LEN] = '\0'; 
+    message[MAX_MSG_LEN] = '\0';
 
     lcd.print("Enter Msg:");
 }
@@ -210,7 +198,7 @@ int getNextNodeInPath(int target) {
     // Call findShortestPath() to populate prev[] array
     findShortestPath(NODE_ID, target, prev);
 
-    // Reconstruct the path to determine the next hop by backtracking through 
+    // Reconstruct the path to determine the next hop by backtracking through
     // the prev array
     int node = target;
     while (prev[node] != -1 && prev[node] != NODE_ID) {
@@ -222,7 +210,7 @@ int getNextNodeInPath(int target) {
 
 // Function to enter a message using the potentiometer
 void inputMessage() {
-    receiveMessage();  
+    receiveMessage();
     selectedChar = getLetterFromPot();
     int button = readButton();
 
@@ -233,7 +221,7 @@ void inputMessage() {
     } else {
         message[cursorPos] = selectedChar;
     }
- 
+
     lcd.setCursor(0, 1);
     lcd.print(message);
     lcd.setCursor(cursorPos, 1);
@@ -255,11 +243,11 @@ void moveCursor(int direction) {
 // Get the selected letter from the potentiometer
 char getLetterFromPot() {
     int potValue = analogRead(A1);
-    int index = map(potValue, 0, 1023, 0, 27); // 26 letters + Space 
+    int index = map(potValue, 0, 1023, 0, 27); // 26 letters + Space
     return (index < 26) ? ('A' + index) : ' '; // Map 0-25 to A-Z, 26 to space
 }
 
-// Function to use up/left/down/right buttons on LCD keypad shield to select 
+// Function to use up/left/down/right buttons on LCD keypad shield to select
 // destination node
 void selectDestination() {
     while (true) {
@@ -318,7 +306,7 @@ void playSendTone() {
     tone(BUZZER_PIN, 1000, 200);
     delay(250);
     tone(BUZZER_PIN, 1200, 200);
-    
+
     tone(BUZZER_PIN, 660, 200);
     delay(250);
     tone(BUZZER_PIN, 831, 200);
@@ -361,7 +349,7 @@ void findShortestPath(int start, int target, int prev[]) {
       {
         if (visited[i] == false)
         {
-          if (dist[i] < shortestDist) 
+          if (dist[i] < shortestDist)
           {
             shortestDist = dist[i];
             nodeToCheck = i;
@@ -382,16 +370,16 @@ void findShortestPath(int start, int target, int prev[]) {
           }
         }
       }
-      
+
       finished = true;
-      
+
       for (int i = 0; i < NUM_NODES; i++)
       {
         if (visited[i] == false || shortestDist == INF) finished = false;
       }
     }
     while (finished == false);
-     
+
     // ------------------------------------------------------------------------
     // Constructs the path from the prev array
     int path[NUM_NODES];
@@ -401,7 +389,7 @@ void findShortestPath(int start, int target, int prev[]) {
         node = prev[node];
     }
 
-    // Prints the path to screen 
+    // Prints the path to screen
     lcd.clear();
     lcd.print("Path: ");
     for (int i = count - 1; i >= 0; i--) {
