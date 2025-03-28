@@ -29,25 +29,19 @@ SoftwareSerial HC12(10, 11);
 
 Packet receivedPkt;
 
-int sendPacket(int senderID, int receiverID){ //Cmd command, Card* cardPlayed, char string[]
-    //Add "Card cardsDealt" later
-    Serial.println("Inside of sendPacket");
-
+int sendPacket(int senderID, int receiverID, Cmd command, Card* cardSent, char string[]){ //Add "Card cardsDealt" later
+    
     Packet* pkt = (Packet*) malloc(sizeof(Packet)); //Initialize a packet
-    Serial.println("Packet Created");
+    
     pkt->senderID = senderID; // Set the sender ID as that node's ID - CHANGE DEPENDING ON WHICH ARDUINO THE CODE IS RUNNING ON
     pkt->receiverID = receiverID;  // Set the variables of the packet to what was passed into the function
-    // pkt->command = command;
-    // //pkt->cardsDealt[10] = cardsDealt;
-    // Serial.println("Packet Initialized, Initial Values Set.");
-    // pkt->cardPlayed = cardPlayed;
-    // Serial.println("Card Pointer Assigned.");
-    // strcpy(pkt->string, string); // Copy string into pkt->string, leave space for null terminator
-    // pkt->string[sizeof(pkt->string) - 1] = '\0'; // Ensure null termination
-    // Serial.println("String Copied.");
+    pkt->command = command;
+    //pkt->cardsDealt[10] = cardsDealt;
+    pkt->cardSent = cardSent;
+    strcpy(pkt->string, string); // Copy string into pkt->string, leave space for null terminator
+    pkt->string[sizeof(pkt->string) - 1] = '\0'; // Ensure null termination
     HC12.write((uint8_t*)pkt, sizeof(Packet)); //Create a pointer to the packet and translate it into bits of data. Then send bits over the HC12
-    Serial.println("Packet Sent!");
-
+    
     free(pkt); //Free the memory used by malloc after sending message
 
     return 1; //Packet sent sucessfully
@@ -57,10 +51,10 @@ int sendPacket(int senderID, int receiverID){ //Cmd command, Card* cardPlayed, c
 Packet* receivePacket(){
     while (HC12.available()) {  // Make sure to receive the whole packet >= sizeof(pkt)
         HC12.readBytes((char*)&receivedPkt, sizeof(receivedPkt));  // Read the whole packet back into the struct
-        Serial.println("SenderID: ");
-        Serial.println(receivedPkt.senderID);
-        Serial.println("ReceiverID: ");
-        Serial.println(receivedPkt.receiverID);
+        // Serial.println("SenderID: ");
+        // Serial.println(receivedPkt.senderID);
+        // Serial.println("ReceiverID: ");
+        // Serial.println(receivedPkt.receiverID);
         return &receivedPkt; //Return 1: Data Received
     }
     return NULL; //Return 0: Nothing received

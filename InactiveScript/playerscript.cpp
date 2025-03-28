@@ -33,6 +33,7 @@ int menu = 1;
 
 Card testCard = {Five, hearts}; // Create a Card object
 Card* testCardPtr = &testCard;     // Assign its address to the pointer
+char string[50] = "Message";
 
 // prints 'Action:' on LCD
 void setup()
@@ -52,7 +53,7 @@ void loop(){
   if (abs(prevButtonVal - buttonVal) > 20){
     if (IsButtonPressed(buttonVal, SELECT) && isConnected == false){
       AutoPrint(&lcd, "Button Pressed!");
-      sendPacket(0, 1); //playCard, testCardPtr, string
+      sendPacket(0, 1, playCard, testCardPtr, string);
     }
   }
   prevButtonVal = buttonVal;
