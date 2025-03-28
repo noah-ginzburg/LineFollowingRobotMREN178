@@ -48,7 +48,7 @@ typedef struct packet{
     Cmd command;
     //Card cardsDealt[10]; //Use this when the master sends the client their initial or updated hand every round
     Card* cardPlayed; //Use this when the player sends the master which card to play
-    char* string[]; //String the master to send to the players - CHANGE LENGTH DEPENDING ON WHAT YOU WANT
+    char string[50]; //String the master to send to the players - CHANGE LENGTH DEPENDING ON WHAT YOU WANT
 } Packet;
 
 
@@ -71,8 +71,8 @@ int sendPacket(int receiverID, Cmd command, Card* cardPlayed, char* string){ //A
     //pkt->cardsDealt[10] = cardsDealt;
     pkt->cardPlayed = cardPlayed;
     //pkt->cardPlayed.suit = cardPlayed.suit;
-    strncpy(*pkt->string, string, sizeof(*pkt->string) - 1); // Copy string into pkt->string, leave space for null terminator
-    pkt->string[sizeof(*pkt->string) - 1] = '\0'; // Ensure null termination
+    strcpy(pkt->string, string); // Copy string into pkt->string, leave space for null terminator
+    pkt->string[sizeof(string)/sizeof(char)-1] = '\0'; // Ensure null termination
 
     HC12.write((uint8_t*)pkt, sizeof(Packet)); //Create a pointer to the packet and translate it into bits of data. Then send bits over the HC12
     //Serial.println("Packet Sent!");
