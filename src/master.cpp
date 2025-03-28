@@ -4,17 +4,16 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-
 // Includes all other libraries
 #include "interface.h"
 #include "player.h"
 #include "card.h"
-#include "DataTransmission.cpp"
+#include "DataTransmission.h"
 
 // Defines all game macros
 #define MAX_PLAYERS 8
 
-//Hello Here is an Update
+// Hello Here is an Update
 
 // initialize the library by associating any needed LCD interface pin with the arduino pin number it is connected to
 const int rs = 8, en = 9, d4 = 4, d5 = 5, d6 = 6, d7 = 7;
@@ -110,10 +109,10 @@ void loop()
 
       if (pkt != NULL) // if master received a packet and the command is to add a new player
       {
-        if (pkt->command == addPlayer && pkt->senderID != -1)
+        if (pkt->command == addPlayer && pkt->senderID == -1)
         {
           Player *newPlayer = (player *)malloc(sizeof(Player));
-          initPlayer(newPlayer);
+          // initPlayer(newPlayer);
 
           newPlayer->playerNum = ++numPlayers; // Autoincrements the player number
 
@@ -129,9 +128,10 @@ void loop()
           strcpy(playerMsg, pNumStr);
 
           // Send back player number to the player
-          sendPacket(newPlayer->playerNum, addPlayer, NULL, playerMsg);
+          sendPacket(0, newPlayer->playerNum, addPlayer, NULL, playerMsg);
 
           tone(3, 1000, 200);
+          noTone(3);
           delay(5000);
         }
       }
