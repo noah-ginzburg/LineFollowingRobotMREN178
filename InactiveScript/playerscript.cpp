@@ -34,24 +34,25 @@ int menu = 1;
 // prints 'Action:' on LCD
 void setup()
 {
+  Serial.begin(9600);
   lcd.begin(16, 2);
   lcd.setCursor(0, 0);
-  lcd.print("Action:");
+  lcd.print("Click select");
 }
 
 // initializes loop
 void loop()
 {
+  Serial.println("test");
+  sendPacket(pNum, 0, addPlayer, NULL);
 
-  buttonVal = analogRead(analogInPin);
+  // buttonVal = analogRead(analogInPin);
 
-  if (abs(prevButtonVal - buttonVal) > 20)
+  /*if (abs(prevButtonVal - buttonVal) > 20)
   {
     if (IsButtonPressed(buttonVal, SELECT) && isConnected == false)
     {
       AutoPrint(&lcd, "Button Pressed!");
-
-      sendPacket(pNum, 0, addPlayer, NULL, "\0");
     }
   }
 
@@ -72,7 +73,7 @@ void loop()
 
   default:
     break;
-  }
+  }*/
 
   prevButtonVal = buttonVal;
 

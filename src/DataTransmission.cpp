@@ -20,8 +20,8 @@ char string[50] = "Message Sent Sucessfully!";
 
 //// END OF TEST VALUES
 
-int sendPacket(int senderID, int receiverID, Cmd command, Card *cardPlayed, char *string)
-{ // Add "Card cardsDealt" later
+int sendPacket(int senderID, int receiverID, Cmd command, Card *cardPlayed) // char string[]
+{                                                                           // Add "Card cardsDealt" later
 
     Packet *pkt = (Packet *)malloc(sizeof(Packet)); // Initialize a packet
     pkt->senderID = senderID;                       // Set the sender ID as that node's ID - CHANGE DEPENDING ON WHICH ARDUINO THE CODE IS RUNNING ON
@@ -30,12 +30,15 @@ int sendPacket(int senderID, int receiverID, Cmd command, Card *cardPlayed, char
     // pkt->cardsDealt[10] = cardsDealt;
     pkt->cardPlayed = cardPlayed;
     // pkt->cardPlayed.suit = cardPlayed.suit;
-    strncpy(*pkt->string, string, sizeof(*pkt->string) - 1); // Copy string into pkt->string, leave space for null terminator
-    pkt->string[sizeof(*pkt->string) - 1] = '\0';            // Ensure null termination
+    // strcpy(pkt->string, string);                                          // Copy string into pkt->string, leave space for null terminator
+    // pkt->string[sizeof(pkt->string) / sizeof(pkt->string[0]) - 1] = '\0'; // Ensure null termination
 
+    Serial.println("Attempting to send!");
     HC12.write((uint8_t *)pkt, sizeof(Packet)); // Create a pointer to the packet and translate it into bits of data. Then send bits over the HC12
     // Serial.println("Packet Sent!");
 
+    Serial.println("Packet Sent!");
+    Serial.println("Sender ID: " + pkt->senderID);
     free(pkt); // Free the memory used by malloc after sending message
 
     return 1; // Packet sent sucessfully
@@ -43,7 +46,7 @@ int sendPacket(int senderID, int receiverID, Cmd command, Card *cardPlayed, char
 
 Packet *receivePacket()
 {
-    Packet *pkt;
+    Packet pkt;
 
     // Serial.println("Receive Packet Function Opened");
 
@@ -54,6 +57,7 @@ Packet *receivePacket()
     while (HC12.available())
     { // Make sure to receive the whole packet >= sizeof(pkt)
 
+        Serial.print("HC12 available bytes: ");
         HC12.readBytes((char *)&pkt, sizeof(pkt)); // Read the whole packet back into the struct
 
         // if (pkt->receiverID == playerNum)
@@ -70,7 +74,9 @@ Packet *receivePacket()
         // Serial.println(pkt.string);
         // Serial.println("--- END OF TRANSMISSION ---\n");
         // }
-        return pkt; // Return 1: Data Received
+
+        Serial.println("Packet Received!");
+        return &pkt; // Return 1: Data Received
     }
     return NULL; // Return 0: Nothing received
 }
