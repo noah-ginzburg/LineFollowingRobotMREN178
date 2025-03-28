@@ -31,9 +31,21 @@ bool isConnected = false;
 // initialize menu
 int menu = 1;
 
-Card testCard = {Five, hearts}; // Create a Card object
-Card* testCardPtr = &testCard;     // Assign its address to the pointer
+
+////// TEST VALUES //////
+
+// Next two lines create a pointer to a card that is passed on 
+// into the sendPacket function to simulate a player playing or receiving a card
+Card testCard = {Five, hearts};
+Card* testCardPtr = &testCard;
+
+Card* testHand[10] = {&testCard}; //This creates an array of pointers to cards and sets them all to the 5 of Hearts.
+// This simulates the master sending the player their hand at the beginning of the game
+
 char string[50] = "Message";
+
+///// END OF TEST VALUES //////
+
 
 // prints 'Action:' on LCD
 void setup()
@@ -53,7 +65,7 @@ void loop(){
   if (abs(prevButtonVal - buttonVal) > 20){
     if (IsButtonPressed(buttonVal, SELECT) && isConnected == false){
       AutoPrint(&lcd, "Button Pressed!");
-      sendPacket(0, 1, playCard, testCardPtr, string);
+      sendPacket(0, 1, playCard, testCardPtr, testHand, string);
     }
   }
   prevButtonVal = buttonVal;

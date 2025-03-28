@@ -31,12 +31,12 @@ typedef struct packet {
     int senderID;   // ID of who the packet is getting sent from
     int receiverID; // ID of who the packet is getting sent to
     Cmd command;
-    Card* cardSent; // Use this when the player sends the master which card to play
-    //Card* cardsDealt[10]; //Use this when the master sends the client their initial or updated hand every round
+    Card cardSent; // Use this when the player sends the master which card to play
+    Card cardsDealt[10]; //Use this when the master sends the client their initial or updated hand every round
     char string[50];     // String the master to send to the players - CHANGE LENGTH DEPENDING ON WHAT YOU WANT
 } Packet;
 
-int sendPacket(int senderID, int receiverID, Cmd command, Card* cardSent, char string[]);
+int sendPacket(int senderID, int receiverID, Cmd command, Card* cardSent, Card* cardsDealt[], char string[]);
 Packet* receivePacket();
 
 #endif

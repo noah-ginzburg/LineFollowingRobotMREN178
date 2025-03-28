@@ -29,15 +29,16 @@ SoftwareSerial HC12(10, 11);
 
 Packet receivedPkt;
 
-int sendPacket(int senderID, int receiverID, Cmd command, Card* cardSent, char string[]){ //Add "Card cardsDealt" later
+int sendPacket(int senderID, int receiverID, Cmd command, Card* cardSent, Card* cardsDealt[], char string[]){
     
     Packet* pkt = (Packet*) malloc(sizeof(Packet)); //Initialize a packet
     
     pkt->senderID = senderID; // Set the sender ID as that node's ID - CHANGE DEPENDING ON WHICH ARDUINO THE CODE IS RUNNING ON
     pkt->receiverID = receiverID;  // Set the variables of the packet to what was passed into the function
     pkt->command = command;
-    //pkt->cardsDealt[10] = cardsDealt;
-    pkt->cardSent = cardSent;
+    for (int i=0; i<10; i++) pkt->cardsDealt[i] = *cardsDealt[i]; 
+            // Dereference the inputted pointers to the dealt hand and store their values in the ith positions of the packet's array of Cards
+    pkt->cardSent = *cardSent; // Dereference the inputted pointer and store its value in the packet's card spot
     strcpy(pkt->string, string); // Copy string into pkt->string, leave space for null terminator
     pkt->string[sizeof(pkt->string) - 1] = '\0'; // Ensure null termination
     HC12.write((uint8_t*)pkt, sizeof(Packet)); //Create a pointer to the packet and translate it into bits of data. Then send bits over the HC12
