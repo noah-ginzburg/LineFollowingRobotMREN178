@@ -90,7 +90,7 @@ void loop()
 
   buttonVal = analogRead(analogInPin);
 
-  SwapMessages(&lcd, millis(), "Message1", "Message2", 3000);
+  // SwapMessages(&lcd, millis(), "Message1", "Message2", 3000);
 
   switch (gs)
   {
@@ -100,33 +100,45 @@ void loop()
   case PLAYERS_WAIT:
 
     // Function to wait on player connect (use a while loop, detect when select is presesd to start the game)
-    do
+    // do
+    //{
+    // If Received new player from anothre arduino (serial.available)
+    // Detect incoming connection from player, check if command packet says connect
+
+    Packet *pkt = receivePacket();
+
+    if (pkt != NULL)
+      Serial.println("Received Packet");
+
+    if (pkt != NULL) // if master received a packet and the command is to add a new player
     {
-      // If Received new player from anothre arduino (serial.available)
-      // Detect incoming connection from player, check if command packet says connect
-
-      Packet *pkt = receivePacket();
-
-      if (pkt != NULL) // if master received a packet and the command is to add a new player
+      if (pkt->command == addPlayer && pkt->senderID == -1)
       {
+<<<<<<< HEAD
         if (pkt->command == addPlayer && pkt->senderID == -1)
         {
           Player *newPlayer = (player *)malloc(sizeof(Player));
           // initPlayer(newPlayer);
+=======
+        Serial.println("Received Packet From Player");
+        Player *newPlayer = (player *)malloc(sizeof(Player));
+        // initPlayer(newPlayer);
+>>>>>>> e4c26639282af711d79a8a9dcd35cf13d47d3039
 
-          newPlayer->playerNum = ++numPlayers; // Autoincrements the player number
+        newPlayer->playerNum = ++numPlayers; // Autoincrements the player number
 
-          players[numPlayers] = *newPlayer; // Stores the new player
+        players[numPlayers] = *newPlayer; // Stores the new player
 
-          AutoPrint(&lcd, "Player ", 1);
-          AutoPrint(&lcd, newPlayer->playerNum, 0);
-          AutoPrint(&lcd, "is Connected!", 0);
+        AutoPrint(&lcd, "Player ", 1);
+        AutoPrint(&lcd, newPlayer->playerNum, 0);
+        AutoPrint(&lcd, "is Connected!", 0);
 
-          char *playerMsg = "You are Player #";
-          char *pNumStr;
-          sprintf(pNumStr, "%d", newPlayer->playerNum);
-          strcpy(playerMsg, pNumStr);
+        char *playerMsg = "You are Player #";
+        char *pNumStr;
+        sprintf(pNumStr, "%d", newPlayer->playerNum);
+        strcpy(playerMsg, pNumStr);
 
+<<<<<<< HEAD
           // Send back player number to the player
           sendPacket(0, newPlayer->playerNum, addPlayer, NULL, playerMsg);
 
@@ -134,9 +146,18 @@ void loop()
           noTone(3);
           delay(5000);
         }
-      }
+=======
+        // Send back player number to the player
+        sendPacket(0, newPlayer->playerNum, addPlayer, NULL);
 
-    } while (numPlayers < MAX_PLAYERS || (numPlayers > 1 && !IsButtonPressed(buttonVal, SELECT))); // may have to implement button debouncing (so it only activates once), this line is just if prevbuttonval != buttonval
+        tone(3, 1000, 200);
+        noTone(3);
+        delay(5000);
+>>>>>>> e4c26639282af711d79a8a9dcd35cf13d47d3039
+      }
+    }
+
+    //} while (numPlayers < MAX_PLAYERS || (numPlayers > 1 && !IsButtonPressed(buttonVal, SELECT))); // may have to implement button debouncing (so it only activates once), this line is just if prevbuttonval != buttonval
 
     realloc(players, numPlayers * sizeof(Player)); // Check if this line actually works
 
