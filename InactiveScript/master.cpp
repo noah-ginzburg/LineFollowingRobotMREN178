@@ -14,14 +14,19 @@
 // Defines all game macros
 #define MAX_PLAYERS 8
 
-//Hello Here is an Update
-
 // initialize the library by associating any needed LCD interface pin with the arduino pin number it is connected to
 const int rs = 8, en = 9, d4 = 4, d5 = 5, d6 = 6, d7 = 7;
 LiquidCrystal lcd(rs, en, d4, d5, d6, d7);
 const int analogInPin = A0;
 int buttonVal = 0;
 int prevButtonVal = 0;
+
+//Initialize the deck of cards and the discard pile
+Deck* gameDeck = (Deck*)malloc(sizeof(Deck));
+initDeck(gameDeck);
+
+Discard* gameDiscard = (Discard*)malloc(sizeof(Discard));
+initDiscard(gameDiscard);
 
 /////////////////////////////////////////
 typedef enum gamestate
@@ -31,12 +36,12 @@ typedef enum gamestate
   START_GAME,
   PLAYER_TURN,
   END_GAME,
-  test
 } GameState;
 
-GameState gs = PLAYERS_WAIT;
+GameState gs = START_GAME; //the initial game state is start game
 
-Player *players = (Player *)malloc(MAX_PLAYERS * sizeof(Player));
+//Pointers to the player structs
+Player *players = (Player*)malloc(MAX_PLAYERS * sizeof(Player));
 int numPlayers = 0;
 int currentPlayer = 1;
 
@@ -47,6 +52,7 @@ void ResetGame()
   // Initialize everything here again, should reset every single variable
 }
 
+//This function reads the player game states
 void ReadPlayerOption(PO po)
 {
   switch (po)
@@ -70,6 +76,9 @@ void ReadPlayerOption(PO po)
     // This is hard because of potential card mismatching
 
     break;
+
+  case SHOW:
+  //show the cards the player has in their hand
 
   default:
     break; // or print invalid player option
@@ -103,7 +112,7 @@ void loop()
     // Function to wait on player connect (use a while loop, detect when select is presesd to start the game)
     do
     {
-      // If Received new player from anothre arduino (serial.available)
+      // If Received new player from another arduino (serial.available)
       // Detect incoming connection from player, check if command packet says connect
 
       Packet *pkt = receivePacket();
@@ -164,16 +173,25 @@ void loop()
       gs = END_GAME;
     else
     {
-
       // Wait on player option
       PO playerOption = PLAY; // for now, use commandpacket later
       ReadPlayerOption(playerOption);
 
-      // If deck is empty, reshuffle discard, enqueue everything to deck
+      // If deck is empty, empty cards from discard, enqueue everything to deck and shuffle
+      if (gameDeck->count == 0){
 
+        //add the cards in the discard file to game deck
+        while(!isEmpty(gameDiscard)){
+          Card* remove = dequeue(gameDiscard); //pop from stack
+          enqueue(remove, gameDeck); //enqueue to game deck
+        }
+
+        //shuffle the cards
+        shuffle(gameDeck);
+      }
       currentPlayer++;
       if (currentPlayer > numPlayers)
-        currentPlayer = 0;
+        currentPlayer = 1; //changed it to 1, it was zero before
     }
 
     break;
@@ -191,6 +209,7 @@ void loop()
     winner++;
 
     // Display Message "PLAYER" winner "WINS! PRess select to restart the game"
+    SwapMessages("Player" + String(currentPlayer) + "Wins!!!!", "Press select to restart the game")
 
     // Detect detect select button press
     // gs = INITIALIZE;

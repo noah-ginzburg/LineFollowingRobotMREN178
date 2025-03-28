@@ -13,7 +13,7 @@ int main(void){
 
 //returns a pointer to a new card given the suit and rank
 Card* newCard(int rank, int suit){
-    Card* new; //initalize a new card
+    Card* new = (Card*)malloc(sizeof(Card)); //initalize a new card
     new->rank = (Rank)(rank);
     new->suit = (Suit)(suit);
     return new;
