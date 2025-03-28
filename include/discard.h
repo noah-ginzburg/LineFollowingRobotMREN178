@@ -1,8 +1,9 @@
 #ifndef DISCARD_H
 #define DISCARD_H
 
+#include <stdbool.h>
 #include "card.h"
-typedef enum {false, true} bool;
+
 
 typedef struct Discard {
     int tos;

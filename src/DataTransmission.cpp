@@ -3,79 +3,50 @@ FILENAME:     DataTransmission.cpp
 AUTHOR:       Lucas Dejmek
 DATE:         20/03/2025
 
-ATTRIBUTIONS: MREN178 Course Content
+ATTRIBUTIONS: MREN178 Course Content, GitHub Copilot
 ******************************************************************************/
 
-//Arduino Standard Libraries
-#include <Arduino.h>
-#include <LiquidCrystal.h>
-#include <SoftwareSerial.h>
-
-//Custom Libraries
-#include <card.h>
-#include <player.h>
-
-//C Standard Libraries
-#include <stdio.h>
-#include <string.h>
-#include <stdlib.h>
+#include "DataTransmission.h"
 
 // LCD Keypad Shield Pins
-LiquidCrystal lcd(8, 9, 4, 5, 6, 7);
+//LiquidCrystal lcd(8, 9, 4, 5, 6, 7);
 
 // HC-12 Wireless Communication
-SoftwareSerial HC12(10, 11);  
+SoftwareSerial HC12(10, 11);
 
-#define NODE_ID 0 //Change this line for every node. NOTE: MASTER IS NODE ZERO (0). ALL PLAYERS ARE NODES 1-7. 
+#define NODE_ID 1 //Change this line for every node. NOTE: MASTER IS NODE ZERO (0). ALL PLAYERS ARE NODES 1-7. 
              // WARNING!!! THIS IS NOT PLAYER_ID! NODE_ID IS THE ID OF THE NODE THE CODE IS RUNNING ON, WHEREAS PLAYER_ID IS THE ID OF THE PLAYER GETTING SENT DATA
-
-// #define NUM_NODES 4    
-// #define INF 9999       
-// #define BUZZER_PIN 3   
-
-#define BTN_RIGHT  0    // Analog Output Value for Right button
-#define BTN_LEFT   410  // Analog Output Value for Left button
-#define BTN_UP     99   // Analog Output Value for Up button
-#define BTN_DOWN   255  // Analog Output Value for Down button
-#define BTN_SELECT 640  // Analog Output Value for Select button
-#define BTN_NONE   1023 // No button pressed
-
-typedef enum commands {playCard = 0, drawCard, showCards, addPlayer, assignPlayerNum} Cmd; //Commands
-
-typedef struct packet{
-    int senderID; // ID of who the packet is getting sent from
-    int receiverID; // ID of who the packet is getting sent to
-    Cmd command;
-    //Card cardsDealt[10]; //Use this when the master sends the client their initial or updated hand every round
-    Card* cardPlayed; //Use this when the player sends the master which card to play
-    char* string[]; //String the master to send to the players - CHANGE LENGTH DEPENDING ON WHAT YOU WANT
-} Packet;
-
-
 
 //// TEST VALUES TO SEE IF PROGRAM WORKS
 
 // Card* testcard;
-Card testcard = {Five, hearts}; // Example
-char string[50] = "Message Sent Sucessfully!";
+// Card testCard = {Five, hearts}; // Create a Card object
+// Card* testCardPtr = &testCard;     // Assign its address to the pointer
+// char string[50] = "Message Sent Sucessfully!";
 //String teststring;
 
 //// END OF TEST VALUES
 
-int sendPacket(int receiverID, Cmd command, Card* cardPlayed, char* string){ //Add "Card cardsDealt" later
+Packet receivedPkt;
+
+int sendPacket(int senderID, int receiverID){ //Cmd command, Card* cardPlayed, char string[]
+    //Add "Card cardsDealt" later
+    Serial.println("Inside of sendPacket");
 
     Packet* pkt = (Packet*) malloc(sizeof(Packet)); //Initialize a packet
-    pkt->senderID = NODE_ID; // Set the sender ID as that node's ID - CHANGE DEPENDING ON WHICH ARDUINO THE CODE IS RUNNING ON
+    Serial.println("Packet Created");
+    pkt->senderID = senderID; // Set the sender ID as that node's ID - CHANGE DEPENDING ON WHICH ARDUINO THE CODE IS RUNNING ON
     pkt->receiverID = receiverID;  // Set the variables of the packet to what was passed into the function
-    pkt->command = command;
-    //pkt->cardsDealt[10] = cardsDealt;
-    pkt->cardPlayed = cardPlayed;
-    //pkt->cardPlayed.suit = cardPlayed.suit;
-    strncpy(*pkt->string, string, sizeof(*pkt->string) - 1); // Copy string into pkt->string, leave space for null terminator
-    pkt->string[sizeof(*pkt->string) - 1] = '\0'; // Ensure null termination
-
+    // pkt->command = command;
+    // //pkt->cardsDealt[10] = cardsDealt;
+    // Serial.println("Packet Initialized, Initial Values Set.");
+    // pkt->cardPlayed = cardPlayed;
+    // Serial.println("Card Pointer Assigned.");
+    // strcpy(pkt->string, string); // Copy string into pkt->string, leave space for null terminator
+    // pkt->string[sizeof(pkt->string) - 1] = '\0'; // Ensure null termination
+    // Serial.println("String Copied.");
     HC12.write((uint8_t*)pkt, sizeof(Packet)); //Create a pointer to the packet and translate it into bits of data. Then send bits over the HC12
-    //Serial.println("Packet Sent!");
+    Serial.println("Packet Sent!");
 
     free(pkt); //Free the memory used by malloc after sending message
 
@@ -84,53 +55,34 @@ int sendPacket(int receiverID, Cmd command, Card* cardPlayed, char* string){ //A
 
 
 Packet* receivePacket(){
-    Packet* pkt;
-
-    //Serial.println("Receive Packet Function Opened");
-
-    // Serial.print("HC12 available bytes: ");
-    // Serial.println(HC12.available());
-    // delay(2000);
-
     while (HC12.available()) {  // Make sure to receive the whole packet >= sizeof(pkt)
-        
-        HC12.readBytes((char*)&pkt, sizeof(pkt));  // Read the whole packet back into the struct
-        
-        if (pkt->receiverID == NODE_ID) { //Check if the message was meant for this node. If so, process the data
-            // Serial.println("\n--- BEGINNING OF TRANSMISSION ---");
-            // Serial.print("Received from Player #");
-            // Serial.println(pkt.senderID);
-            // Serial.print("Command: ");
-            // Serial.println(pkt.command);
-            // Serial.print("Card Played: ");
-            // Serial.print(pkt.cardPlayed.rank);
-            // Serial.print(" of ");
-            // Serial.println(pkt.cardPlayed.suit);
-            // Serial.println(pkt.string);
-            // Serial.println("--- END OF TRANSMISSION ---\n");
-        }
-        return pkt; //Return 1: Data Received
+        HC12.readBytes((char*)&receivedPkt, sizeof(receivedPkt));  // Read the whole packet back into the struct
+        Serial.println("SenderID: ");
+        Serial.println(receivedPkt.senderID);
+        Serial.println("ReceiverID: ");
+        Serial.println(receivedPkt.receiverID);
+        return &receivedPkt; //Return 1: Data Received
     }
     return NULL; //Return 0: Nothing received
 }
 
 
 
-void setup() {
-    Serial.begin(9600);
-    HC12.begin(9600);
-    //pinMode(BUZZER_PIN, OUTPUT);
-}
+// void setup() {
+//     Serial.begin(9600);
+//     HC12.begin(9600);
+//     pinMode(BUZZER_PIN, OUTPUT);
+// }
 
-void loop() { //Don't use, just call the send and receive functions in your code and pass by reference what you want
+// void loop() { //Don't use, just call the send and receive functions in your code and pass by reference what you want
 
-    // Transmitting Function
-    //sendPacket(3, playCard, testcard, string);
-    delay(5000); //5 second delay before next send
+//     // Transmitting Function
+//     sendPacket(0, 1, playCard, testCardPtr, string);
+//     delay(5000); //5 second delay before next send
 
-    //Receiving Function
-    //receivePacket();
-}
+//     //Receiving Function
+//     //receivePacket();
+// }
 
 
 

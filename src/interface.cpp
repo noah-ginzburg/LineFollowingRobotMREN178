@@ -38,6 +38,35 @@ void AutoPrint(LiquidCrystal *lcd, char *str, int fromStart = 1)
     }
 }
 
+void AutoPrint(LiquidCrystal *lcd, int val, int fromStart = 0)
+{
+    if (fromStart)
+    {
+        lcd->clear();
+        lcd->home();
+    }
+
+    char *str = NULL;
+    sprintf(str, "%d", val); // Convert int to string
+
+    int strLength = strlen(str);
+
+    if (strLength > rows * cols)
+    {
+        ThrowError(lcd, stdErrMsg);
+        return;
+    }
+
+    for (int i = 0; i < strLength; i++)
+    {
+        lcd->write(str[i]);
+        if (i == cols - 1)
+        {
+            lcd->setCursor(0, 1);
+        }
+    }
+}
+
 void ManualPrint(LiquidCrystal *lcd, char *str, int row, int col, int clear)
 {
     int len = strlen(str);

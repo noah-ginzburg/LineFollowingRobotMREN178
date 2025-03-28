@@ -1,4 +1,4 @@
-//Player GUI setup below:
+// Player GUI setup below:
 
 // Start by intializing buttons (left, right) as well as LCD pins
 // Different menu options
@@ -11,8 +11,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-
 // Includes all other libraries
+#include "DataTransmission.h"
 #include "interface.h"
 #include "player.h"
 #include "card.h"
@@ -20,22 +20,66 @@
 // initialize the library by associating any needed LCD interface pin with the arduino pin number it is connected to
 const int rs = 8, en = 9, d4 = 4, d5 = 5, d6 = 6, d7 = 7;
 LiquidCrystal lcd(rs, en, d4, d5, d6, d7);
+const int analogInPin = A0;
+int buttonVal = 0;
+int prevButtonVal = 0;
 
-//initialize menu
+int pNum = -1;
+
+bool isConnected = false;
+
+// initialize menu
 int menu = 1;
 
-//prints 'Action:' on LCD
-void setup() {
-    lcd.begin(16, 2);
-    lcd.setCursor(0,0);
-    lcd.print("Action:");
+Card testCard = {Five, hearts}; // Create a Card object
+Card* testCardPtr = &testCard;     // Assign its address to the pointer
+
+// prints 'Action:' on LCD
+void setup()
+{
+  lcd.begin(16, 2);
+  HC12.begin(9600);
+  Serial.begin(9600);
+  lcd.setCursor(0, 0);
+  lcd.print("Action:");
 }
 
-//initializes loop
-void loop() {
+// initializes loop
+void loop(){
+  //Serial.println("Inside Loop");
+  buttonVal = analogRead(analogInPin);
+
+  if (abs(prevButtonVal - buttonVal) > 20){
+    if (IsButtonPressed(buttonVal, SELECT) && isConnected == false){
+      AutoPrint(&lcd, "Button Pressed!");
+      sendPacket(0, 1); //playCard, testCardPtr, string
+    }
+  }
+  prevButtonVal = buttonVal;
+}
+/*
+  //Packet *incomingPacket = receivePacket();
+
+  switch (incomingPacket->command)
+  {
+  case addPlayer:
+    isConnected = true;
+    pNum = incomingPacket->receiverID;
+
+    AutoPrint(&lcd, incomingPacket->string, 1);
+    tone(3, 500, 200);
+    noTone(3);
+    delay(5000);
+
+    break;
+
+  default:
+    break;
+  }
+
   int x = analogRead(0);
   lcd.setCursor(0,1);
-  
+
 //loops between menus depending on when LEFT and RIGHT is pressed
 
   if (x < RIGHT) {
@@ -99,5 +143,5 @@ void loop() {
         //run pass function
     break;
     }
-
-}
+*/
+//}
