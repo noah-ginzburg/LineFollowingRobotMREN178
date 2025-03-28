@@ -46,21 +46,12 @@ typedef struct packet
     int senderID;   // ID of who the packet is getting sent from
     int receiverID; // ID of who the packet is getting sent to
     Cmd command;
-<<<<<<< HEAD
     // Card* cardsDealt[10]; //Use this when the master sends the client their initial or updated hand every round
     Card* cardPlayed; // Use this when the player sends the master which card to play
     char* string;     // String the master to send to the players - CHANGE LENGTH DEPENDING ON WHAT YOU WANT
 } Packet;
 
 int sendPacket(int senderID, int receiverID, Cmd command, Card *cardPlayed, char *string);
-=======
-    // Card cardsDealt[10]; //Use this when the master sends the client their initial or updated hand every round
-    Card *cardPlayed; // Use this when the player sends the master which card to play
-    char string[50];     // String the master to send to the players - CHANGE LENGTH DEPENDING ON WHAT YOU WANT
-} Packet;
-
-int sendPacket(int senderID, int receiverID, Cmd command, Card *cardPlayed); //, char *string
->>>>>>> e4c26639282af711d79a8a9dcd35cf13d47d3039
 Packet *receivePacket();
 
 #endif
