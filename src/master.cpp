@@ -8,7 +8,7 @@
 #include "interface.h"
 #include "player.h"
 #include "card.h"
-#include "DataTransmission.h"
+#include "DataTransmission.cpp"
 
 // Defines all game macros
 #define MAX_PLAYERS 8
@@ -106,7 +106,6 @@ void loop()
     // Detect incoming connection from player, check if command packet says connect
 
     Packet *pkt = receivePacket();
-  
 
     if (pkt != NULL)
       Serial.println("Received Packet");

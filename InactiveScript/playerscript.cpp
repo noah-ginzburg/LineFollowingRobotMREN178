@@ -26,8 +26,6 @@ int prevButtonVal = 0;
 
 int pNum = -1;
 
-bool isConnected = false;
-
 // initialize menu
 int menu = 1;
 

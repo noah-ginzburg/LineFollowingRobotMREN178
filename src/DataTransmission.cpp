@@ -29,11 +29,16 @@ int sendPacket(int senderID, int receiverID, Cmd command, Card *cardPlayed) // c
     pkt->command = command;
     // pkt->cardsDealt[10] = cardsDealt;
     pkt->cardPlayed = cardPlayed;
+<<<<<<< HEAD
     // pkt->cardPlayed.suit = cardPlayed.suit;
-    // strcpy(pkt->string, string);                                          // Copy string into pkt->string, leave space for null terminator
-    // pkt->string[sizeof(pkt->string) / sizeof(pkt->string[0]) - 1] = '\0'; // Ensure null termination
+    strcpy(pkt->string, string);                           // Copy string into pkt->string, leave space for null terminator
+    pkt->string[sizeof(string) / sizeof(char) - 1] = '\0'; // Ensure null termination
+    == == == =
+                 // pkt->cardPlayed.suit = cardPlayed.suit;
+                 // strcpy(pkt->string, string);                                          // Copy string into pkt->string, leave space for null terminator
+                 // pkt->string[sizeof(pkt->string) / sizeof(pkt->string[0]) - 1] = '\0'; // Ensure null termination
 
-    Serial.println("Attempting to send!");
+        Serial.println("Attempting to send!");
     HC12.write((uint8_t *)pkt, sizeof(Packet)); // Create a pointer to the packet and translate it into bits of data. Then send bits over the HC12
     // Serial.println("Packet Sent!");
 
