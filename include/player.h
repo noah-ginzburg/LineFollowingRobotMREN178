@@ -37,8 +37,7 @@ typedef struct player
 
 bool PlayCard(Player *player, int index, Card *lastPlayed);
 void ShowCards();
-void initPlayer(Player *player);
+Player* initPlayer();
 void deleteCard(Player *player, Card card);
-// Not Done Yet,
 
 #endif

@@ -39,13 +39,23 @@ void ShowCards(Player *player)
     // Simply display the cards in the player's hand
 }
 
-void initPlayer(Player *player)
+Player* initPlayer()
 {
+    Player* player = (Player *)malloc(sizeof(Player)); // allocate memory for the player struct
+    
+    if (player == NULL)
+    {
+        printf("Memory allocation failed\n");
+        return NULL;
+    }
+
     player->hand = (CardLL *)malloc(sizeof(CardLL)); // allocate memory for the player's hand
     player->hand->head = NULL;                       // initialize the head of the linked list to NULL
 
     player->handSize = 0;
     player->playerNum = -1;
+
+    return player;
 }
 
 // deletes a card from the player's hand

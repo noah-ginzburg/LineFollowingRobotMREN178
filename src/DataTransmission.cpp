@@ -34,6 +34,7 @@ int sendPacket(int senderID, int receiverID, Cmd command, Player *player, CardNo
 
     Packet *pkt = (Packet *)malloc(sizeof(Packet)); // Initialize a packet
 
+    // packet -- LL convert to array
     pkt->senderID = senderID;     // Set the sender ID as that node's ID - CHANGE DEPENDING ON WHICH ARDUINO THE CODE IS RUNNING ON
     pkt->receiverID = receiverID; // Set the variables of the packet to what was passed into the function
     pkt->command = command;
@@ -46,6 +47,7 @@ int sendPacket(int senderID, int receiverID, Cmd command, Player *player, CardNo
 
     HC12.write((uint8_t *)pkt, sizeof(Packet)); // Create a pointer to the packet and translate it into bits of data. Then send bits over the HC12
 
+    Serial.println("Packet Sent: ");
     free(pkt); // Free the memory used by malloc after sending message
 
     return 1; // Packet sent sucessfully
@@ -60,6 +62,7 @@ Packet *receivePacket()
         // Serial.println(receivedPkt.senderID);
         // Serial.println("ReceiverID: ");
         // Serial.println(receivedPkt.receiverID);
+        Serial.println("Packet Received");
         return &receivedPkt; // Return 1: Data Received
     }
     return NULL; // Return 0: Nothing received

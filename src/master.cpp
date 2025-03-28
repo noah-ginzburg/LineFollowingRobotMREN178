@@ -40,6 +40,7 @@ GameState gs = PLAYERS_WAIT;
 Player *players = (Player *)malloc(MAX_PLAYERS * sizeof(Player));
 int numPlayers = 0;
 int currentPlayer = 1;
+extern SoftwareSerial HC12; // HC-12 Wireless Communication
 
 Deck *deck; // This is the deck of cards that will be used in the game
 
@@ -85,6 +86,8 @@ void setup()
   lcd.begin(16, 2);
   // initialize the serial communications:
   Serial.begin(9600);
+  HC12.begin(9600);
+
   //////////////////////////////////////////////////////
   gs = PLAYERS_WAIT;
 
@@ -110,6 +113,7 @@ void loop()
     //{
     // If Received new player from anothre arduino (serial.available)
     // Detect incoming connection from player, check if command packet says connect
+    AutoPrint(&lcd, 283, 1);
 
     Packet *pkt = receivePacket();
 
@@ -120,8 +124,8 @@ void loop()
     {
       if (pkt->command == addPlayer && pkt->senderID == -1)
       {
-        Player *newPlayer = (player *)malloc(sizeof(Player));
-        // initPlayer(newPlayer);
+        Player *newPlayer;
+        newPlayer = initPlayer(); // Initialize a new player
 
         newPlayer->playerNum = ++numPlayers; // Autoincrements the player number
 
@@ -129,7 +133,10 @@ void loop()
 
         AutoPrint(&lcd, "Player ", 1);
         AutoPrint(&lcd, newPlayer->playerNum, 0);
-        AutoPrint(&lcd, "is Connected!", 0);
+        ManualPrint(&lcd, "is Connected!", 1, 0, 0);
+
+        Serial.println(numPlayers);
+        Serial.println(players[numPlayers].playerNum);
 
         char *playerMsg = "You are Player #";
         char pNumStr[2];
@@ -141,10 +148,9 @@ void loop()
         sendPacket(0, newPlayer->playerNum, addPlayer, NULL, NULL, playerMsg);
 
         tone(3, 1000, 200);
-        noTone(3);
         delay(5000);
       }
-        }
+    }
 
     //} while (numPlayers < MAX_PLAYERS || (numPlayers > 1 && !IsButtonPressed(buttonVal, SELECT))); // may have to implement button debouncing (so it only activates once), this line is just if prevbuttonval != buttonval
 

@@ -11,7 +11,6 @@ int isActive = 1;
 int isMsg1On = 0;
 int isFirstPass = 1;
 
-
 void AutoPrint(LiquidCrystal *lcd, char *str, int fromStart = 1)
 {
     if (fromStart)
@@ -46,8 +45,8 @@ void AutoPrint(LiquidCrystal *lcd, int val, int fromStart = 0)
         lcd->home();
     }
 
-    char *str = NULL;
-    sprintf(str, "%d", val); // Convert int to string
+    char *str = (char *)malloc(10 * sizeof(char)); // Allocate memory for the string
+    sprintf(str, "%d", val);                       // Convert int to string
 
     int strLength = strlen(str);
 
@@ -81,6 +80,8 @@ void ManualPrint(LiquidCrystal *lcd, char *str, int row, int col, int clear)
     {
         lcd->clear();
     }
+
+    lcd->setCursor(col, row);
 
     for (int i = 0; i < len; i++)
     {
