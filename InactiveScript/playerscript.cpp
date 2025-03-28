@@ -26,45 +26,26 @@ int prevButtonVal = 0;
 
 int pNum = -1;
 
-<<<<<<< HEAD
 bool isConnected = false;
 
-=======
->>>>>>> e4c26639282af711d79a8a9dcd35cf13d47d3039
 // initialize menu
 int menu = 1;
 
 // prints 'Action:' on LCD
 void setup()
 {
-<<<<<<< HEAD
   lcd.begin(16, 2);
   lcd.setCursor(0, 0);
   lcd.print("Action:");
-=======
-  Serial.begin(9600);
-  lcd.begin(16, 2);
-  lcd.setCursor(0, 0);
-  lcd.print("Click select");
->>>>>>> e4c26639282af711d79a8a9dcd35cf13d47d3039
 }
 
 // initializes loop
 void loop()
 {
-<<<<<<< HEAD
-=======
-  Serial.println("test");
-  sendPacket(pNum, 0, addPlayer, NULL);
->>>>>>> e4c26639282af711d79a8a9dcd35cf13d47d3039
 
   // buttonVal = analogRead(analogInPin);
 
-<<<<<<< HEAD
   if (abs(prevButtonVal - buttonVal) > 20)
-=======
-  /*if (abs(prevButtonVal - buttonVal) > 20)
->>>>>>> e4c26639282af711d79a8a9dcd35cf13d47d3039
   {
     if (IsButtonPressed(buttonVal, SELECT) && isConnected == false)
     {
@@ -73,8 +54,9 @@ void loop()
       sendPacket(pNum, 0, addPlayer, NULL, "\0");
     }
   }
+  /*
 
-  Packet *incomingPacket = receivePacket();
+  //Packet *incomingPacket = receivePacket();
 
   switch (incomingPacket->command)
   {
@@ -91,11 +73,7 @@ void loop()
 
   default:
     break;
-<<<<<<< HEAD
-  }
-=======
   }*/
->>>>>>> e4c26639282af711d79a8a9dcd35cf13d47d3039
 
   prevButtonVal = buttonVal;
 
