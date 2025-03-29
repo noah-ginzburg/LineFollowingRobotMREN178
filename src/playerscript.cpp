@@ -1,9 +1,11 @@
-// Player GUI setup below:
+////////////////////////////////
 
-// Start by intializing buttons (left, right) as well as LCD pins
-// Different menu options
-// Switch cases -> if button 'left/right' is pressed, switch to menu 2
-// If select is pressed for each menu (pass/draw/show), present different screen
+// FOR EACH PLAYER, DEFINE A RANDOM CONNECT ID
+// THIS IS SO THAT THE MASTER CAN IDENTIFY THE PLAYER WHO CONNECTS
+// THIS VALUES CANNOT BE BETWEEN (0-8) AS THOSE ARE PLAYER IDS. MUST BE POSITIVE
+#define CONNECT_ID 3352
+
+/////////////////////////////
 
 // include the library code:
 #include <Arduino.h>
@@ -33,6 +35,9 @@ typedef enum playerstate
   IN_GAME,
   GAME_OVER
 } PlayerState;
+
+Player P_NULL;
+Card C_NULL;
 
 PlayerState ps = NOT_CONNECTED;
 
@@ -73,6 +78,17 @@ void setup()
   Serial.begin(9600);
   lcd.setCursor(0, 0);
   lcd.print("Action:");
+
+  C_NULL.rank = A;
+  C_NULL.suit = clubs;
+
+  for (int i = 0; i < MAX_CARDS; i++)
+  {
+    P_NULL.hand[i] = C_NULL;
+  }
+
+  P_NULL.playerNum = -1;
+  P_NULL.handSize = -1;
 }
 
 // initializes loop
@@ -85,16 +101,37 @@ void loop()
   switch (ps)
   {
   case NOT_CONNECTED:
-    if (incomingPacket != NULL && incomingPacket->command == addPlayer && incomingPacket->senderID == 0)
+
+    if (incomingPacket != NULL)
+    {
+      Serial.println("Packet is not null");
+      Serial.println(incomingPacket->senderID);
+      Serial.println(incomingPacket->receiverID);
+      Serial.println(incomingPacket->player.playerNum);
+    }
+
+    if (incomingPacket != NULL && incomingPacket->command == addPlayer && incomingPacket->senderID == 0 && incomingPacket->receiverID == CONNECT_ID)
     {
       ps = CONNECTED_AND_WAITING;
 
-      pNum = incomingPacket->receiverID;
+      if (incomingPacket->player.playerNum < 1 && incomingPacket->player.playerNum > 8)
+      {
+        Serial.println("Player is NULL");
+      }
+      else
+      {
+        Serial.println("Player is NOT NULL");
+      }
+
+      pNum = incomingPacket->player.playerNum;
 
       if (incomingPacket->string != NULL)
       {
         strcpy(connectedMsg, incomingPacket->string);
       }
+
+      Serial.println("pnum: ");
+      Serial.println(pNum);
 
       tone(3, 800, 200);
 
@@ -105,19 +142,20 @@ void loop()
       if (IsButtonPressed(buttonVal, SELECT))
       {
         AutoPrint(&lcd, "Requesting to Connect...");
-        sendPacket(pNum, 0, addPlayer, NULL, NULL, NULL);
+
+        sendPacket(CONNECT_ID, 0, addPlayer, &P_NULL, NULL);
       }
     }
     break;
   case CONNECTED_AND_WAITING:
     SwapMessages(&lcd, millis(), connectedMsg, waitGameStartMsg, 3000);
 
-    if (receivePacket()->command == startGame)
+    if (incomingPacket->command == startGame)
     {
       AutoPrint(&lcd, "Game Starting!");
       tone(3, 1000, 200);
 
-      delay(2000);
+      delay(5000);
       ps = IN_GAME;
     }
     break;

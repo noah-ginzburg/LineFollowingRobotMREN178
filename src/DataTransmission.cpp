@@ -16,7 +16,7 @@ ATTRIBUTIONS: MREN178 Course Content, GitHub Copilot
 // HC-12 Wireless Communication
 SoftwareSerial HC12(10, 11);
 
-#define NODE_ID 1 // Change this line for every node. NOTE: MASTER IS NODE ZERO (0). ALL PLAYERS ARE NODES 1-7.
+// Change this line for every node. NOTE: MASTER IS NODE ZERO (0). ALL PLAYERS ARE NODES 1-7.
 // WARNING!!! THIS IS NOT PLAYER_ID! NODE_ID IS THE ID OF THE NODE THE CODE IS RUNNING ON, WHEREAS PLAYER_ID IS THE ID OF THE PLAYER GETTING SENT DATA
 
 //// TEST VALUES TO SEE IF PROGRAM WORKS
@@ -31,24 +31,25 @@ SoftwareSerial HC12(10, 11);
 
 Packet receivedPkt;
 
-int sendPacket(int senderID, int receiverID, Cmd command, Player *player, CardNode *cardNode, char *string)
+int sendPacket(int senderID, int receiverID, Cmd command, Player *player, char *string)
 {
-
     Packet *pkt = (Packet *)malloc(sizeof(Packet)); // Initialize a packet
+    if (pkt == NULL)
+    {
+        Serial.println("FATAL ERROR: PACKET MEM ALLOCATION FAILED");
+    }
 
-    // packet -- LL convert
     pkt->senderID = senderID;     // Set the sender ID as that node's ID - CHANGE DEPENDING ON WHICH ARDUINO THE CODE IS RUNNING ON
     pkt->receiverID = receiverID; // Set the variables of the packet to what was passed into the function
     pkt->command = command;
 
-    pkt->player = player;     // Set the player to the player passed in
-    pkt->cardNode = cardNode; // Set the cardNode to the cardNode passed in
+    pkt->player = *player; // Set the player to the player passed in
 
     strncpy(pkt->string, string, sizeof(pkt->string) - 1);
     pkt->string[sizeof(pkt->string) - 1] = '\0'; // Null terminate
 
-    Serial.print("Sending Packet with String: ");
-    Serial.println(pkt->string);
+    // Serial.print("Sending Packet with String: ");
+    // Serial.println(pkt->string);
 
     HC12.write((uint8_t *)pkt, sizeof(Packet)); // Create a pointer to the packet and translate it into bits of data. Then send bits over the HC12
 
