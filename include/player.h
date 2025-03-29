@@ -11,7 +11,7 @@ ATTRIBUTIONS:
 #define PLAYER_H
 
 #include "card.h"
-#include "hand.h"
+#include "deck.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -30,14 +30,14 @@ typedef enum PlayerOption
 
 typedef struct player
 {
-    CardLL *hand; // pointer to the player's hand
+    Card hand[MAX_CARDS]; // pointer to the player's hand
     int handSize;
     int playerNum;
 } Player;
 
 bool PlayCard(Player *player, int index, Card *lastPlayed);
 void ShowCards();
-Player* initPlayer();
+void initPlayer(Player *player);
 void deleteCard(Player *player, Card card);
 
 #endif

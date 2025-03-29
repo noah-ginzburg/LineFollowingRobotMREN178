@@ -17,6 +17,8 @@
 #include "player.h"
 #include "card.h"
 
+#define MAX_STR_SIZE 33
+
 // initialize the library by associating any needed LCD interface pin with the arduino pin number it is connected to
 const int rs = 8, en = 9, d4 = 4, d5 = 5, d6 = 6, d7 = 7;
 LiquidCrystal lcd(rs, en, d4, d5, d6, d7);
@@ -24,10 +26,19 @@ const int analogInPin = A0;
 int buttonVal = 0;
 int prevButtonVal = 0;
 
+typedef enum playerstate
+{
+  NOT_CONNECTED,
+  CONNECTED_AND_WAITING,
+  IN_GAME,
+  GAME_OVER
+} PlayerState;
+
+PlayerState ps = NOT_CONNECTED;
+
 int pNum = -1;
 
 extern SoftwareSerial HC12;
-bool isConnected = false;
 
 // initialize menu
 int menu = 1;
@@ -42,9 +53,17 @@ Card *testCardPtr = &testCard;
 Card *testHand[10] = {&testCard}; // This creates an array of pointers to cards and sets them all to the 5 of Hearts.
 // This simulates the master sending the player their hand at the beginning of the game
 
-char string[50] = "Message";
+char string[MAX_STR_SIZE] = "Message";
+
+char connectedMsg[MAX_STR_SIZE] = "";
+char waitGameStartMsg[MAX_STR_SIZE] = "Waiting on Game Start";
 
 ///// END OF TEST VALUES //////
+
+int isSomeBtnClicked(int prevButtonVal, int buttonVal)
+{
+  return abs(prevButtonVal - buttonVal) > 20;
+}
 
 // prints 'Action:' on LCD
 void setup()
@@ -61,17 +80,63 @@ void loop()
 {
   // Serial.println("Inside Loop");
   buttonVal = analogRead(analogInPin);
+  Packet *incomingPacket = receivePacket();
 
-  if (abs(prevButtonVal - buttonVal) > 20)
+  switch (ps)
   {
-    if (IsButtonPressed(buttonVal, SELECT) && isConnected == false)
+  case NOT_CONNECTED:
+    if (incomingPacket != NULL && incomingPacket->command == addPlayer && incomingPacket->senderID == 0)
     {
-      AutoPrint(&lcd, "Button Pressed!");
-      sendPacket(pNum, 0, addPlayer, NULL, NULL, NULL);
+      ps = CONNECTED_AND_WAITING;
+
+      pNum = incomingPacket->receiverID;
+
+      if (incomingPacket->string != NULL)
+      {
+        strcpy(connectedMsg, incomingPacket->string);
+      }
+
+      tone(3, 800, 200);
+
+      delay(2000);
     }
+    else if (isSomeBtnClicked(prevButtonVal, buttonVal))
+    {
+      if (IsButtonPressed(buttonVal, SELECT))
+      {
+        AutoPrint(&lcd, "Requesting to Connect...");
+        sendPacket(pNum, 0, addPlayer, NULL, NULL, NULL);
+      }
+    }
+    break;
+  case CONNECTED_AND_WAITING:
+    SwapMessages(&lcd, millis(), connectedMsg, waitGameStartMsg, 3000);
+
+    if (receivePacket()->command == startGame)
+    {
+      AutoPrint(&lcd, "Game Starting!");
+      tone(3, 1000, 200);
+
+      delay(2000);
+      ps = IN_GAME;
+    }
+    break;
+  case IN_GAME:
+
+    break;
+
+  case GAME_OVER:
+
+    break;
+  default:
+    break;
   }
+
   prevButtonVal = buttonVal;
+
+  delay(100);
 }
+
 /*
   //Packet *incomingPacket = receivePacket();
 

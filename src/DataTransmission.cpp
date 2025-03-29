@@ -6,6 +6,8 @@ DATE:         20/03/2025
 ATTRIBUTIONS: MREN178 Course Content, GitHub Copilot
 ******************************************************************************/
 
+#define BUZZER_PIN 3 // Pin for the buzzer
+
 #include "DataTransmission.h"
 
 // LCD Keypad Shield Pins
@@ -34,16 +36,19 @@ int sendPacket(int senderID, int receiverID, Cmd command, Player *player, CardNo
 
     Packet *pkt = (Packet *)malloc(sizeof(Packet)); // Initialize a packet
 
-    // packet -- LL convert to array
+    // packet -- LL convert
     pkt->senderID = senderID;     // Set the sender ID as that node's ID - CHANGE DEPENDING ON WHICH ARDUINO THE CODE IS RUNNING ON
     pkt->receiverID = receiverID; // Set the variables of the packet to what was passed into the function
     pkt->command = command;
 
-    pkt->player = player;        // Set the player to the player passed in
-    pkt->cardNode = cardNode;    // Set the cardNode to the cardNode passed in
-    strcpy(pkt->string, string); // Copy string into pkt->string
+    pkt->player = player;     // Set the player to the player passed in
+    pkt->cardNode = cardNode; // Set the cardNode to the cardNode passed in
 
-    // pkt->string[sizeof(pkt->string) - 1] = '\0'; // Ensure null termination
+    strncpy(pkt->string, string, sizeof(pkt->string) - 1);
+    pkt->string[sizeof(pkt->string) - 1] = '\0'; // Null terminate
+
+    Serial.print("Sending Packet with String: ");
+    Serial.println(pkt->string);
 
     HC12.write((uint8_t *)pkt, sizeof(Packet)); // Create a pointer to the packet and translate it into bits of data. Then send bits over the HC12
 
@@ -68,20 +73,29 @@ Packet *receivePacket()
     return NULL; // Return 0: Nothing received
 }
 
-// void setup() {
+// void setup()
+// {
 //     Serial.begin(9600);
 //     HC12.begin(9600);
 //     pinMode(BUZZER_PIN, OUTPUT);
 // }
 
-// void loop() { //Don't use, just call the send and receive functions in your code and pass by reference what you want
+// void loop()
+// { // Don't use, just call the send and receive functions in your code and pass by reference what you want
 
 //     // Transmitting Function
-//     sendPacket(0, 1, playCard, testCardPtr, string);
-//     delay(5000); //5 second delay before next send
 
-//     //Receiving Function
-//     //receivePacket();
+//     // char* string = "test string abc";
+//     // sendPacket(0, 1, addPlayer, NULL, NULL, string);
+//     // delay(5000); //5 second delay before next send
+
+//     // Receiving Function
+//     Packet *pkt = receivePacket();
+//     if (pkt != NULL)
+//     {
+//         Serial.print("String: ");
+//         Serial.println(pkt->string);
+//     }
 // }
 
 // int buttonPress() {

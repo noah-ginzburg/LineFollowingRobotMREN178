@@ -14,6 +14,7 @@
 
 // Defines all game macros
 #define MAX_PLAYERS 8
+#define MAX_STR_SIZE 33
 
 // Hello Here is an Update
 
@@ -109,52 +110,57 @@ void loop()
   case PLAYERS_WAIT:
 
     // Function to wait on player connect (use a while loop, detect when select is presesd to start the game)
-    // do
-    //{
-    // If Received new player from anothre arduino (serial.available)
-    // Detect incoming connection from player, check if command packet says connect
-    AutoPrint(&lcd, 283, 1);
-
-    Packet *pkt = receivePacket();
-
-    if (pkt != NULL)
-      Serial.println("Received Packet");
-
-    if (pkt != NULL) // if master received a packet and the command is to add a new player
+    do
     {
-      if (pkt->command == addPlayer && pkt->senderID == -1)
+      // If Received new player from anothre arduino (serial.available)
+      // Detect incoming connection from player, check if command packet says connect
+      AutoPrint(&lcd, "Waiting on Player Connect", 1);
+
+      Packet *pkt = receivePacket();
+
+      if (pkt != NULL) // if master received a packet and the command is to add a new player
       {
-        Player *newPlayer;
-        newPlayer = initPlayer(); // Initialize a new player
+        if (pkt->command == addPlayer && pkt->senderID == -1)
+        {
+          Player *newPlayer = (Player *)malloc(sizeof(Player)); // Allocate memory for the new player
+          newPlayer->hand = (CardLL *)malloc(sizeof(CardLL));   // allocate memory for the player's hand
+          newPlayer->hand->head = NULL;                         // initialize the head of the linked list to NULL
+          newPlayer->handSize = 0;
 
-        newPlayer->playerNum = ++numPlayers; // Autoincrements the player number
+          newPlayer->playerNum = ++numPlayers; // Autoincrements the player number
 
-        players[numPlayers] = *newPlayer; // Stores the new player
+          players[numPlayers] = *newPlayer; // Stores the new player
 
-        AutoPrint(&lcd, "Player ", 1);
-        AutoPrint(&lcd, newPlayer->playerNum, 0);
-        ManualPrint(&lcd, "is Connected!", 1, 0, 0);
+          AutoPrint(&lcd, "Player ", 1);
+          AutoPrint(&lcd, newPlayer->playerNum, 0);
+          ManualPrint(&lcd, "is Connected!", 1, 0, 0);
 
-        Serial.println(numPlayers);
-        Serial.println(players[numPlayers].playerNum);
+          // Serial.println(numPlayers);
+          // Serial.println(players[numPlayers].playerNum); //this works
 
-        char *playerMsg = "You are Player #";
-        char pNumStr[2];
-        sprintf(pNumStr, "%d", newPlayer->playerNum);
-        pNumStr[1] = '\0'; // Null-terminate the string
-        strcpy(playerMsg, pNumStr);
+          char playerMsg[MAX_STR_SIZE] = "You are Player #";
+          char pNumStr[2];
+          sprintf(pNumStr, "%d", newPlayer->playerNum);
+          pNumStr[1] = '\0'; // Null-terminate the string
+          strcat(playerMsg, pNumStr);
 
-        // Send back player number to the player
-        sendPacket(0, newPlayer->playerNum, addPlayer, NULL, NULL, playerMsg);
+          // Send back player number to the player
+          sendPacket(0, newPlayer->playerNum, addPlayer, NULL, NULL, playerMsg);
 
-        tone(3, 1000, 200);
-        delay(5000);
+          tone(3, 1000, 200);
+          delay(5000);
+          noTone(3);
+        }
       }
-    }
 
-    //} while (numPlayers < MAX_PLAYERS || (numPlayers > 1 && !IsButtonPressed(buttonVal, SELECT))); // may have to implement button debouncing (so it only activates once), this line is just if prevbuttonval != buttonval
+      delay(100);
+    } while (numPlayers < MAX_PLAYERS || (numPlayers > 1 && !IsButtonPressed(buttonVal, SELECT))); // may have to implement button debouncing (so it only activates once), this line is just if prevbuttonval != buttonval
 
-    realloc(players, numPlayers * sizeof(Player)); // Check if this line actually works
+    AutoPrint(&lcd, "Game Starting...", 1);
+    sendPacket(0, -1, startGame, NULL, NULL, NULL);
+    delay(2000);
+
+    // realloc(players, numPlayers * sizeof(Player)); // Check if this line actually works
 
     // else
     // start game by setting gs to PlayerTurn

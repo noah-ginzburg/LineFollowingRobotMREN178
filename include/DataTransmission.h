@@ -34,10 +34,11 @@
 
 typedef enum commands
 {
-    playCard = 0,
+    addPlayer = 0,
+    startGame,
+    playCard,
     drawCard,
     showCards,
-    addPlayer,
     assignPlayerNum
 } Cmd; // Commands
 
@@ -47,9 +48,9 @@ typedef struct packet
     int receiverID; // ID of who the packet is getting sent to
     Cmd command;
     // Card* cardsDealt[10]; //Use this when the master sends the client their initial or updated hand every round
-    Player *player; // Use this when the master sends the client their initial or updated hand every round
-    CardNode* cardNode; // Use this when the master sends the client their initial or updated hand every round
-    char *string; // String the master to send to the players - CHANGE LENGTH DEPENDING ON WHAT YOU WANT
+    Player *player;     // Use this when the master sends the client their initial or updated hand every round
+    CardNode *cardNode; // Use this when the master sends the client their initial or updated hand every round
+    char string[33];    // String the master to send to the players - CHANGE LENGTH DEPENDING ON WHAT YOU WANT
 } Packet;
 
 int sendPacket(int senderID, int receiverID, Cmd command, Player *player, CardNode *cardNode, char *string);

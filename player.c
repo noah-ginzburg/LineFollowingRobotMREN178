@@ -7,7 +7,6 @@ ATTRIBUTIONS:
 ******************************************************************************/
 
 #include "player.h"
-#include "deck.h"
 
 bool PlayCard(Player *player, int index, Card *lastPlayed)
 {
@@ -39,34 +38,17 @@ void ShowCards(Player *player)
     // Simply display the cards in the player's hand
 }
 
-Player* initPlayer()
+// Init player not working in master.cpp?
+void initPlayer(Player *player)
 {
-    Player* player = (Player *)malloc(sizeof(Player)); // allocate memory for the player struct
-    
-    if (player == NULL)
-    {
-        printf("Memory allocation failed\n");
-        return NULL;
-    }
-
-    player->hand = (CardLL *)malloc(sizeof(CardLL)); // allocate memory for the player's hand
-    player->hand->head = NULL;                       // initialize the head of the linked list to NULL
-
     player->handSize = 0;
     player->playerNum = -1;
 
-    return player;
+    return;
 }
 
 // deletes a card from the player's hand
 // reorganizes the array, so it sorted
 void deleteCard(Player *player, Card card)
 {
-    CardNode *node = searchNode(player->hand->head, card); // search for the node to delete
-
-    node = deleteNode(node);
-
-    free(node);
-
-    player->handSize--;
 }
