@@ -8,34 +8,41 @@ ATTRIBUTIONS:
 
 #include "player.h"
 
-bool PlayCard(Player *player, int index, Card *lastPlayed)
+bool AddCardToHand(Player *player, Card card)
 {
-    /*
-    1. display a "choose card" menu menu to the user, let them choose from their current cards
-    2. send that card to the master
-    -> the master will determine whether the card is valid
-    3. wait for hc12 to be available for feedback
-    -> the master will send feedback, if it is good feedback, end the function. if not, keep looping until a valid option is chosen
-    */
+    if (player->handSize < MAX_CARDS)
+    {
+        player->hand[(player->handSize)++] = card;
+        return true;
+    }
+    else
+        return false;
 }
 
-Card *DrawCard(Deck *deck)
+// Deletes a card from the player's hand
+// Shuffles all elements after the deleted element down one
+bool deleteCard(Player *player, Card card)
 {
-    /*
-    1. request to draw a card from the msater
-    2. wait for serial feedback
-    3. display a "Card received: [new card]" message to the user
+    if (player->handSize < 1)
+        return false;
 
-    */
+    int idx;
+    for (idx = 0; idx < player->handSize; idx++) // Iterate only through the handSize
+    {
+        if (player->hand[idx].rank == card.rank && player->hand[idx].suit == card.suit)
+        {
+            // Shift cards after the deleted card
+            for (int i = idx; i < player->handSize - 1; i++)
+            {
+                player->hand[i] = player->hand[i + 1];
+            }
 
-    // returns card from the top of deck
-    return pop(deck);
-}
+            player->handSize--; // Decrease the hand size
+            return true;        // Return true when the card is successfully deleted
+        }
+    }
 
-void ShowCards(Player *player)
-{
-    // need to add functionally for this
-    // Simply display the cards in the player's hand
+    return false; // Return false if the card is not found
 }
 
 // Init player not working in master.cpp?
@@ -45,10 +52,4 @@ void initPlayer(Player *player)
     player->playerNum = -1;
 
     return;
-}
-
-// deletes a card from the player's hand
-// reorganizes the array, so it sorted
-void deleteCard(Player *player, Card card)
-{
 }

@@ -9,24 +9,32 @@ ATTRIBUTIONS:
 #include <time.h>
 
 // adds card to the queue with wrap around implemented
-void enqueue(CardNode *cardNode, Deck *deck)
+void enqueue(Card *card, Deck *deck)
 {
     if (deck->count >= MAX_CARDS)
         return;
     deck->rear = ++(deck->rear) % MAX_CARDS;
     (deck->count)++;
-    
-    deck->queue[deck->rear] = cardNode;
+
+    deck->queue[deck->rear] = *card;
 };
 
 // removes card from the queue with wrap around implemented
-CardNode *dequeue(Deck *deck)
+Card *dequeue(Deck *deck)
 {
     if (deck->count <= 0)
         return NULL;
-    CardNode *pick = deck->queue[deck->front];
+    Card pick = deck->queue[deck->front];
     deck->front = ++(deck->front) % MAX_CARDS;
-    return pick;
+    return &pick;
+}
+
+// returns the top card
+Card *peek(Deck *deck)
+{
+    if (deck->count <= 0)
+        return NULL;
+    return &deck->queue[deck->front];
 }
 
 // displays the deck of cards
@@ -35,8 +43,8 @@ void displayDeck(Deck *deck)
     for (int i = 0; i < deck->count; i++)
     {
         int index = (deck->front + i) % MAX_CARDS;
-        displaySuit(deck->queue[index]->card);
-        displayRank(deck->queue[index]->card);
+        displaySuit(deck->queue[index].suit);
+        displayRank(deck->queue[index].rank);
         printf("\n");
     }
 }
