@@ -54,6 +54,8 @@ int sendPacket(int senderID, int receiverID, Cmd command, Player *player, char *
     HC12.write((uint8_t *)pkt, sizeof(Packet)); // Create a pointer to the packet and translate it into bits of data. Then send bits over the HC12
 
     Serial.println("Packet Sent: ");
+    Serial.print("Encoded String: ");
+    Serial.println(pkt->string);
     free(pkt); // Free the memory used by malloc after sending message
 
     return 1; // Packet sent sucessfully
@@ -84,121 +86,71 @@ Packet *receivePacket()
 
 char *getStrFromCard(Card card)
 {
-    static char str[5]; // Large enough to hold both rank and suit
-
-    char str1[3]; // Buffer for rank (max 2 digits + null terminator)
-    char str2[2]; // Buffer for suit (max 1 digit + null terminator)
-
-    sprintf(str1, "%d", card.rank); // Convert rank to string
-    sprintf(str2, "%d", card.suit); // Convert suit to string
-
-    strcpy(str, str1); // Copy the rank into str
-    strcat(str, str2); // Append the suit to str
-
-    return str; // Return the concatenated result
+    static char str[4]; // Increased buffer size
+    snprintf(str, sizeof(str), "%02d%d", card.rank, card.suit);
+    return str;
 }
 
 Card getCardFromStr(char *str)
 {
-    Card card;
-    Rank rank;
-    Suit suit;
+    static Card card;
+    int r, s;
 
-    int r = atoi(&str[0]);
-    int s = atoi(&str[1]);
+    Serial.print("Raw input string: ");
+    Serial.println(str); // Debugging
 
-    switch (r)
+    // Extract up to 2-digit rank and 1-digit suit
+    if (sscanf(str, "%2d%1d", &r, &s) != 2)
     {
-    case 0:
-        rank = A;
-        break;
-    case 1:
-        rank = Two;
-        break;
-    case 2:
-        rank = Three;
-        break;
-    case 3:
-        rank = Four;
-        break;
-    case 4:
-        rank = Five;
-        break;
-    case 5:
-        rank = Six;
-        break;
-    case 6:
-        rank = Seven;
-        break;
-    case 7:
-        rank = Eight;
-        break;
-    case 8:
-        rank = Nine;
-        break;
-    case 9:
-        rank = Ten;
-        break;
-    case 10:
-        rank = Jack;
-        break;
-    case 11:
-        rank = Queen;
-        break;
-    case 12:
-        rank = King;
-        break;
-    default:
-        rank = A;
-        break; // Default to Ace if invalid
+        Serial.println("Parsing failed!");
+        card.rank = A;
+        card.suit = spades;
+        return card;
     }
 
-    switch (s)
-    {
-    case 0:
-        suit = clubs;
-        break;
-    case 1:
-        suit = diamonds;
-        break;
-    case 2:
-        suit = hearts;
-        break;
-    case 3:
-        suit = spades;
-        break;
-    default:
-        suit = spades;
-        break; // Default to Hearts if invalid
-    }
+    Serial.print("Parsed values -> Rank: ");
+    Serial.print(r);
+    Serial.print(", Suit: ");
+    Serial.println(s);
 
-    card.rank = rank;
-    card.suit = suit;
+    // **Ensure valid range**
+    if (r < 1 || r > 13)
+        r = A; // **King is 13, not out of range**
+    if (s < 0 || s > 3)
+        s = spades;
+
+    card.rank = (Rank)r; // **Direct cast instead of switch**
+    card.suit = (Suit)s;
 
     return card;
 }
 
-// void setup()
-// {
-//     Serial.begin(9600);
-//     HC12.begin(9600);
-//     pinMode(BUZZER_PIN, OUTPUT);
-// }
+void setup()
+{
+    Serial.begin(9600);
+    HC12.begin(9600);
+    pinMode(BUZZER_PIN, OUTPUT);
+}
 
-// void loop()
-// { // Don't use, just call the send and receive functions in your code and pass by reference what you want
+/*void loop()
+{ // Don't use, just call the send and receive functions in your code and pass by reference what you want
 
-//     // Transmitting Function
+    // Transmitting Function
 
-//     // char* string = "test string abc";
-//     // sendPacket(0, 1, addPlayer, NULL, NULL, string);
-//     // delay(5000); //5 second delay before next send
+    // Card testCard;
+    // testCard.rank = King;
+    // testCard.suit = hearts;
+    // sendPacket(0, 1, addPlayer, NULL, getStrFromCard(testCard));
+    // delay(5000); // 5 second delay before next send
 
-//     // Receiving Function
-//     Packet *pkt = receivePacket();
-//     if (pkt != NULL)
-//     {
-//         Serial.print("String: ");
-//         Serial.println(pkt->string);
-//     }
-// }
+    // Receiving Function
+    Packet *pkt = receivePacket();
+    if (pkt != NULL)
+    {
+        Card receiveCard = getCardFromStr(pkt->string);
+        Serial.print("Rank: ");
+        Serial.println(receiveCard.rank);
+        Serial.print("Suit: ");
+        Serial.println(receiveCard.suit);
+    }
+}*/

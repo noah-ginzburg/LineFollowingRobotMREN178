@@ -44,25 +44,44 @@ GameState gs = PLAYERS_WAIT;
 
 Player players[MAX_PLAYERS]; // Array of players
 int numPlayers = 0;
-int currentPlayer = 1;
+int currentPlayer = 0;
+int prevPlayer = -1;
 extern SoftwareSerial HC12; // HC-12 Wireless Communication
 
 Deck deck; // This is the deck of cards that will be used in the game
 Discard discard;
+Suit topEightSuit;
 
 //////////////////////////////////////////////////
 
 void ResetGame()
 {
   // Initialize everything here again, should reset every single variable
+  numPlayers = 0;
+  currentPlayer = 0;
+  prevPlayer = -1;
+  gs = PLAYERS_WAIT;
+  initDeck(&deck);    // Reinitialize the deck
+  initDeck(&discard); // Reinitialize the discard pile
+  // Reset player hands
+  for (int i = 0; i < MAX_PLAYERS; i++)
+  {
+    players[i].handSize = 0;
+    players[i].playerNum = -1;
+  }
 }
 
-bool CheckIsCardValid(Card playCard, Card topCard)
+bool CheckIsCardValid(Card playCard, Card topCard, Suit topSuit)
 {
   // If the play card is an Eight, it's always valid
   if (playCard.rank == Eight)
     return true;
 
+  if (topCard.rank == Eight)
+  {
+    if (playCard.suit == topCard.suit)
+      return true;
+  }
   // If the rank or the suit matches, the card is valid
   if (playCard.rank == topCard.rank || playCard.suit == topCard.suit)
     return true;
@@ -79,6 +98,11 @@ void ReshuffleDeckWithDiscard(Deck deck, Discard discard)
   }
 
   shuffle(&deck);
+}
+
+void StopAllPlayerTurn()
+{
+  sendPacket(0, -1, stopPlayerTurn, NULL, NULL);
 }
 
 void setup()
@@ -121,7 +145,7 @@ void loop()
   switch (gs)
   {
   case INITIALIZE:
-    ResetGame();
+    ResetGame(); // Only implement this if it works
     break;
   case PLAYERS_WAIT:
     bool shouldStartGame = false;
@@ -227,9 +251,18 @@ void loop()
     }
 
     if (isGameOver == 1)
+    {
       gs = END_GAME;
+
+      sendPacket(0, -1, endTheGame, NULL, "GAME OVER"); // ends the game
+    }
     else
     {
+      if (prevPlayer != currentPlayer)
+      {
+        sendPacket(0, currentPlayer + 1, startPlayerTurn, &players[currentPlayer], NULL); // Starts the player's turn
+      }
+
       Packet *pkt = receivePacket();
 
       // formats the turn player messagee
@@ -240,6 +273,8 @@ void loop()
 
       // Check top discard pile
       Card *topCard = top(&discard);
+      if (topCard->rank != Eight)
+        topEightSuit = topCard->suit; // Basically, this prevents the suit from changing again after the user changed the suit by playing an 8
 
       if (topCard == NULL) // check to make sure top card isnt null
       {
@@ -284,7 +319,7 @@ void loop()
       // Manual.print &lcs, custom character, figure out spacing
 
       // Wait on player option
-      if (pkt != NULL)
+      if (pkt != NULL && pkt->senderID == currentPlayer)
       {
         // Determine player's requirested action
         switch (pkt->command)
@@ -295,14 +330,14 @@ void loop()
           Card playCard = getCardFromStr(pkt->string);
 
           // Validate the card
-          if (&playCard == NULL)
+          if (pkt->string == NULL)
           {
             AutoPrint(&lcd, "ERR: play card NULL");
             delay(5000);
           }
           else
           {
-            if (CheckIsCardValid(playCard, *topCard)) //, determine validity of the card played
+            if (CheckIsCardValid(playCard, *topCard, topEightSuit)) //, determine validity of the card played
             {
               if (deleteCard(&players[currentPlayer], playCard)) // Delete card from user inventory and check if its valkid
               {
@@ -312,24 +347,36 @@ void loop()
                 // Checks if it is an 8
                 if (playCard.rank == Eight)
                 {
-                  // While loop
-                  // Stores an extra packet to swtich between suits
-                  Packet *extraPkt = (Packet *)malloc(sizeof(Packet));
+                  Packet *extraPacket = NULL;
 
-                  // Detects the incoming packet
-                  if (extraPkt != NULL)
+                  do
                   {
-                    // Prompt user
+                    extraPacket = receivePacket();
+                    AutoPrint(&lcd, "Waiting on Suit Change");
+                    delay(50);
+                  } while (extraPacket == NULL);
 
-                    // whilke packet
-                    // Change suit
-                  }
-                  else
+                  Card receivedCard = getCardFromStr(extraPacket->string);
+                  topEightSuit = receivedCard.suit;
+
+                  AutoPrint(&lcd, "Switched suit to: ");
+                  switch (receivedCard.suit)
                   {
-                    // Print error
-                    AutoPrint(&lcd, "ERR: Mem pkt 8s alloc failed");
-                    delay(5000);
+                  case clubs:
+                    ManualPrint(&lcd, "CLUBS", 1, 0, 0);
+                    break;
+                  case diamonds:
+                    ManualPrint(&lcd, "DIAMONDS", 1, 0, 0);
+                    break;
+                  case hearts:
+                    ManualPrint(&lcd, "HEARTS", 1, 0, 0);
+                    break;
+                  case spades:
+                    ManualPrint(&lcd, "SPADES", 1, 0, 0);
+                    break;
                   }
+
+                  delay(5000);
                 }
               }
               else
@@ -342,6 +389,8 @@ void loop()
             else
             {
               // Send invalid packet
+              AutoPrint(&lcd, "Invalid Card, try again");
+              delay(5000);
             }
           }
 
@@ -368,7 +417,12 @@ void loop()
             // Add the card to the player hand
             AddCardToHand(&players[currentPlayer], *drawnCard);
 
+            char strToSend[14] = "You Drew: ";
+            char *cardInfo = getStrFromCard(*drawnCard);
+            strcat(strToSend, cardInfo);
+
             // Send feedback string
+            sendPacket(0, currentPlayer + 1, displayText, NULL, strToSend);
           }
           else
           {
@@ -381,7 +435,7 @@ void loop()
             delay(5000);
 
             // Send feedback to skip player turn
-            // tell player to stop selecting stuff
+            sendPacket(0, currentPlayer + 1, stopPlayerTurn, &players[currentPlayer], "Skipping Your Turn...");
           }
 
           break;
@@ -396,8 +450,11 @@ void loop()
 
       // If deck is empty, reshuffle discard, enqueue everything to deck
       if (peek(&deck) == NULL)
-        ReshuffleDeckWithDiscard(deck, discard);
+        ReshuffleDeckWithDiscard(deck, discard); // Might result in an infinite loop
 
+      StopAllPlayerTurn();
+
+      prevPlayer = currentPlayer;
       // Move to the next player
       currentPlayer = (currentPlayer + 1) % numPlayers;
     }
@@ -406,20 +463,33 @@ void loop()
 
   case END_GAME:
 
-    int winner = 0;
-
+    int winner = -1;
     for (int i = 0; i < numPlayers; i++)
     {
       if (players[i].handSize == 0)
+      {
         winner = i;
+        break;
+      }
     }
+    if (winner >= 0)
+    {
+      // Display winner
+      char winnerMsg[MAX_STR_SIZE] = "Player #";
+      char pNumStr[2];
+      sprintf(pNumStr, "%d", winner + 1); // Player number starts from 1
+      strcat(winnerMsg, pNumStr);
+      strcat(winnerMsg, " Wins!");
 
-    winner++;
+      AutoPrint(&lcd, winnerMsg, 1);
+      delay(5000);
 
-    // Display Message "PLAYER" winner "WINS! PRess select to restart the game"
-
-    // Detect detect select button press
-    // gs = INITIALIZE;
+      // Wait for player to press select to restart
+      /*if (IsButtonPressed(buttonVal, prevButtonVal)) {
+          gs = INITIALIZE;
+      }*/
+      // Do this if it works
+    }
 
     break;
   default:
