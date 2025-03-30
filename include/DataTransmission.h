@@ -36,6 +36,11 @@ typedef enum commands
 {
     addPlayer = 0,
     startGame,
+    startPlayerTurn,
+    stopPlayerTurn,
+    retryTurn,
+    displayText,
+    endTheGame,
     playCard,
     drawCard,
 } Cmd; // Commands
