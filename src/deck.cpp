@@ -23,9 +23,16 @@ Card *dequeue(Deck *deck)
 {
     if (deck->count <= 0)
         return NULL;
+<<<<<<< HEAD
     Card pick = deck->queue[deck->front];
     deck->front = ++(deck->front) % MAX_CARDS;
     return &pick;
+=======
+
+    int lastIndex = deck->front;
+    deck->front = ++(deck->front) % MAX_CARDS;
+    return &deck->queue[lastIndex];
+>>>>>>> BackWork
 }
 
 // returns the top card
@@ -85,7 +92,11 @@ void shuffle(Deck *deck)
 
     for (int i = size - 1; i > 0; i--)
     {
+<<<<<<< HEAD
         int j = rand() % (i + 1);     // Random index
+=======
+        int j = rand() % (i + 1); // Random index
+>>>>>>> BackWork
         Card *tempCard = temp[i]; // Swap manually
         temp[i] = temp[j];
         temp[j] = tempCard;

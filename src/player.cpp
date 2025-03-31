@@ -52,4 +52,8 @@ void initPlayer(Player *player)
     player->playerNum = -1;
 
     return;
+<<<<<<< HEAD
 }
+=======
+}
+>>>>>>> BackWork

@@ -5,12 +5,16 @@ DATE:         March/02/2025
 
 ATTRIBUTIONS: [chatgpt]
 ******************************************************************************/
+<<<<<<< HEAD
 #include "../include/card.h"
 
 int main(void)
 {
     printf("Hello");
 }
+=======
+#include "card.h"
+>>>>>>> BackWork
 
 // returns a pointer to a new card given the suit and rank
 Card *newCard(int rank, int suit)

@@ -153,4 +153,8 @@ Card getCardFromStr(char *str)
         Serial.print("Suit: ");
         Serial.println(receiveCard.suit);
     }
+<<<<<<< HEAD
 }*/
+=======
+}*/
+>>>>>>> BackWork

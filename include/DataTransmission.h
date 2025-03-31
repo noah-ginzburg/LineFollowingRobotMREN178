@@ -40,6 +40,10 @@ typedef enum commands
     stopPlayerTurn,
     retryTurn,
     displayText,
+<<<<<<< HEAD
+=======
+    changeSuit,
+>>>>>>> BackWork
     endTheGame,
     playCard,
     drawCard,

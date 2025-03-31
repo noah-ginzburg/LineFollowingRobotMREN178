@@ -8,7 +8,10 @@ ATTRIBUTIONS:
 
 #include "discard.h"
 
+<<<<<<< HEAD
 
+=======
+>>>>>>> BackWork
 // displays the discard pile
 void displayDeck(Discard *deck)
 {
@@ -21,7 +24,11 @@ void displayDeck(Discard *deck)
     }
 }
 
+<<<<<<< HEAD
 // insert new card into the stack
+=======
+// insert new card into the stacka
+>>>>>>> BackWork
 void push(Card *card, Discard *deck)
 {
     // check if stack is full
@@ -62,7 +69,14 @@ bool isFull(Discard *deck)
 }
 
 // set top pointer to -1 and count to zero
+<<<<<<< HEAD
 void initDiscard(Discard *deck)
 {
     deck->tos = -1;
 }
+=======
+void initDiscard(Discard *discard)
+{
+    discard->tos = -1;
+}
+>>>>>>> BackWork
