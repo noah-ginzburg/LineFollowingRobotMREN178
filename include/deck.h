@@ -16,6 +16,7 @@ typedef struct Deck{
 //Function prototypes
 void enqueue(Card* card, Deck* deck);
 Card* dequeue(Deck* deck);
+Card* peek(Deck* deck);
 void initDeck(Deck* deck);
 void displayDeck(Deck* deck);
 void shuffle(Deck* deck);

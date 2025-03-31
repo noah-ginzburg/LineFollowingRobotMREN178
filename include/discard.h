@@ -17,6 +17,7 @@ void displayDiscard(Discard* deck);
 Card* pop(Discard *deck);
 bool isEmpty(Discard* deck);
 bool isFull(Discard* deck);
+Card* top(Discard* deck);
 
 
 #endif
