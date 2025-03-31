@@ -3,19 +3,19 @@
 
 #include <stdbool.h>
 #include "card.h"
-#include "hand.h"
 
 typedef struct Discard
 {
     int tos;
-    CardNode stack[MAX_CARDS];
+    Card stack[MAX_CARDS];
 } Discard;
 
 // Function prototypes
-void insert(Card *card, Discard *deck);
-void initDeck(Discard *deck); // with cards
+void push(Card *card, Discard *deck);
+void initDiscard(Discard *deck); // with cards
 void displayDeck(Discard *deck);
 Card *pop(Discard *deck);
+Card *top(Discard *deck);
 bool isEmpty(Discard *deck);
 bool isFull(Discard *deck);
 

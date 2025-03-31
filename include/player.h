@@ -19,25 +19,15 @@ ATTRIBUTIONS:
 
 #define MAX_HAND_SIZE 10
 
-// player has three options, they can play a card, draw, view their cards or pass their turn
-typedef enum PlayerOption
-{
-    PLAY,
-    DRAW,
-    SHOW,
-    PASS
-} PO;
-
 typedef struct player
 {
-    Card hand[MAX_CARDS]; // pointer to the player's hand
+    Card hand[MAX_HAND_SIZE]; // pointer to the player's hand
     int handSize;
     int playerNum;
 } Player;
 
-bool PlayCard(Player *player, int index, Card *lastPlayed);
-void ShowCards();
+bool AddCardToHand(Player *player, Card card);
 void initPlayer(Player *player);
-void deleteCard(Player *player, Card card);
+bool deleteCard(Player *player, Card card);
 
 #endif

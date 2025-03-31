@@ -10,7 +10,6 @@
 #include "card.h"
 #include "DataTransmission.h"
 #include "deck.h"
-#include "hand.h"
 
 // Defines all game macros
 #define MAX_PLAYERS 3
@@ -37,15 +36,15 @@ typedef enum gamestate
 } GameState;
 
 GameState gs = PLAYERS_WAIT;
-// Player P_NULL;
-// Card C_NULL;
 
-Player players[MAX_PLAYERS]; // Array of players
+Player players[MAX_PLAYERS];
 int numPlayers = 0;
 int currentPlayer = 1;
 extern SoftwareSerial HC12; // HC-12 Wireless Communication
 
-Deck deck; // This is the deck of cards that will be used in the game
+bool shouldStartGame = false;
+
+Deck *deck; // This is the deck of cards that will be used in the game
 
 //////////////////////////////////////////////////
 
@@ -54,7 +53,7 @@ void ResetGame()
   // Initialize everything here again, should reset every single variable
 }
 
-void ReadPlayerOption(PO po)
+/*void ReadPlayerOption(PO po)
 {
   switch (po)
   {
@@ -81,7 +80,7 @@ void ReadPlayerOption(PO po)
   default:
     break; // or print invalid player option
   }
-}
+}*/
 
 void setup()
 {
@@ -93,21 +92,8 @@ void setup()
 
   //////////////////////////////////////////////////////
   gs = PLAYERS_WAIT;
-  // C_NULL.rank = A;
-  // C_NULL.suit = clubs;
 
-  // for (int i = 0; i < MAX_CARDS; i++)
-  // {
-  //   P_NULL.hand[i] = C_NULL;
-  // }
-
-  // P_NULL.playerNum = -1;
-  // P_NULL.handSize = -1;
-
-  // for (int i = 0; i < MAX_PLAYERS; i++)
-  // {
-  //   players[i] = P_NULL;
-  // }
+  deck = (Deck *)malloc(sizeof(Deck));
 }
 
 void loop()
@@ -123,78 +109,68 @@ void loop()
     ResetGame();
     break;
   case PLAYERS_WAIT:
-    bool shouldStartGame = false;
 
     // Function to wait on player connect (use a while loop, detect when select is presesd to start the game)
     do
     {
-      buttonVal = analogRead(analogInPin);
       // If Received new player from anothre arduino (serial.available)
       // Detect incoming connection from player, check if command packet says connect
       AutoPrint(&lcd, "Waiting on Player Connect", 1);
 
       Packet *pkt = receivePacket();
 
-      if (pkt != NULL && numPlayers <= MAX_PLAYERS) // if master received a packet and the command is to add a new player
+      if (pkt != NULL) // if master received a packet and the command is to add a new player
       {
         if (pkt->command == addPlayer)
         {
-          int curPlayer = numPlayers; // IF we cant reference the second player, adjust this line
-          Serial.print("Current Player Index: ");
-          Serial.println(curPlayer);
+          int curPlayer = numPlayers;
 
           numPlayers++;
-          Serial.print("Num players: ");
-          Serial.println(numPlayers);
 
-          players[curPlayer].handSize = 0;
           players[curPlayer].playerNum = numPlayers; // Autoincrements the player number
+          players[curPlayer].handSize = 0;           // initialize player
+                                                     // Stores the new player
 
           AutoPrint(&lcd, "Player ", 1);
           AutoPrint(&lcd, players[curPlayer].playerNum, 0);
           ManualPrint(&lcd, "is Connected!", 1, 0, 0);
 
-          Serial.println(players[curPlayer].playerNum); // this works
+          // Serial.println(numPlayers);
+          // Serial.println(players[numPlayers].playerNum); //this works
 
           char playerMsg[MAX_STR_SIZE] = "You are Player #";
           char pNumStr[2];
           sprintf(pNumStr, "%d", players[curPlayer].playerNum);
+          pNumStr[1] = '\0'; // Null-terminate the string
           strcat(playerMsg, pNumStr);
 
-          int connectID = pkt->senderID; // Get the ID of the player that connected
-
-          // // Send back player number to the player
+          int connectID = pkt->senderID;
+          // Send back player number to the player
           sendPacket(0, connectID, addPlayer, &players[curPlayer], playerMsg);
 
-          Serial.println("Master sent packet back to player");
-
           tone(3, 1000, 200);
-          delay(3000);
+          delay(5000);
           noTone(3);
         }
       }
 
-      if (IsButtonPressed(buttonVal, SELECT))
+      if (numPlayers > 1 && IsButtonPressed(buttonVal, SELECT)) // adjuts to not instantly start game
       {
-        Serial.println("Button is pressed!");
-        if (numPlayers > 1)
-        {
-          shouldStartGame = true;
-        }
+        shouldStartGame = true;
       }
-
-      delay(50);
+      delay(100);
     } while (!shouldStartGame); // may have to implement button debouncing (so it only activates once), this line is just if prevbuttonval != buttonval
 
     AutoPrint(&lcd, "Game Starting...", 1);
     sendPacket(0, -1, startGame, NULL, NULL);
-    delay(5000);
+    delay(2000);
 
     // realloc(players, numPlayers * sizeof(Player)); // Check if this line actually works
 
     // else
     // start game by setting gs to PlayerTurn
     currentPlayer = 0;
+    gs = START_GAME;
     break;
 
   case START_GAME:
@@ -218,12 +194,14 @@ void loop()
     {
 
       // Wait on player option
-      PO playerOption = PLAY; // for now, use commandpacket later
+      /*PO playerOption = PLAY; // for now, use commandpacket later
       ReadPlayerOption(playerOption);
 
-      // If deck is empty, reshuffle discard, enqueue everything to deck
+      // If deck is empty, reshuffle discard, enqueue everything to deck*/
 
-      currentPlayer = (currentPlayer + 1) % numPlayers;
+      currentPlayer++;
+      if (currentPlayer > numPlayers)
+        currentPlayer = 0; // do better wraparound
     }
 
     break;

@@ -3,7 +3,7 @@
 // FOR EACH PLAYER, DEFINE A RANDOM CONNECT ID
 // THIS IS SO THAT THE MASTER CAN IDENTIFY THE PLAYER WHO CONNECTS
 // THIS VALUES CANNOT BE BETWEEN (0-8) AS THOSE ARE PLAYER IDS. MUST BE POSITIVE
-#define CONNECT_ID 3352
+#define CONNECT_ID 1222
 
 /////////////////////////////
 
@@ -36,8 +36,8 @@ typedef enum playerstate
   GAME_OVER
 } PlayerState;
 
-Player P_NULL;
-Card C_NULL;
+Player P_NULL; // DONT NEED
+Card C_NULL;   // DONT NEED, CAN DELETE THESE TWO
 
 PlayerState ps = NOT_CONNECTED;
 
@@ -84,7 +84,7 @@ void setup()
 
   for (int i = 0; i < MAX_CARDS; i++)
   {
-    P_NULL.hand[i] = C_NULL;
+    // P_NULL.hand[i] = C_NULL;
   }
 
   P_NULL.playerNum = -1;
@@ -94,14 +94,12 @@ void setup()
 // initializes loop
 void loop()
 {
-  // Serial.println("Inside Loop");
   buttonVal = analogRead(analogInPin);
   Packet *incomingPacket = receivePacket();
 
   switch (ps)
   {
   case NOT_CONNECTED:
-
     if (incomingPacket != NULL)
     {
       Serial.println("Packet is not null");
@@ -134,7 +132,6 @@ void loop()
       Serial.println(pNum);
 
       tone(3, 800, 200);
-
       delay(2000);
     }
     else if (isSomeBtnClicked(prevButtonVal, buttonVal))
@@ -142,124 +139,146 @@ void loop()
       if (IsButtonPressed(buttonVal, SELECT))
       {
         AutoPrint(&lcd, "Requesting to Connect...");
-
         sendPacket(CONNECT_ID, 0, addPlayer, &P_NULL, NULL);
       }
     }
     break;
+
   case CONNECTED_AND_WAITING:
     SwapMessages(&lcd, millis(), connectedMsg, waitGameStartMsg, 3000);
 
-    if (incomingPacket->command == startGame)
+    if (incomingPacket != NULL && incomingPacket->command == startGame)
     {
       AutoPrint(&lcd, "Game Starting!");
       tone(3, 1000, 200);
-
       delay(5000);
       ps = IN_GAME;
     }
     break;
-  case IN_GAME:
 
+  case IN_GAME:
+    // Move menu & tracker outside switch-case to maintain their values
+    int menu = 1;
+    int tracker = 1;
+
+    int x = analogRead(0);
+    lcd.setCursor(0, 0);
+    lcd.print("Action:");
+    lcd.setCursor(0, 1);
+
+    // Main menu navigation
+    if (menu != 5)
+    {
+      if (x < RIGHT || x < UP)
+      {
+        menu++;
+        delay(200);
+        while (analogRead(0) < 1000)
+          ;
+      }
+      if (x <= LEFT || x <= DOWN)
+      {
+        menu--;
+        delay(200);
+        while (analogRead(0) < 1000)
+          ;
+      }
+    }
+
+    // Handle submenu selections
+    if (menu == 1 && x <= SELECT)
+    {
+      menu = 5;
+      delay(200);
+      while (analogRead(0) < 1000)
+        ;
+    }
+    if (menu == 2 && x <= SELECT)
+    {
+      menu = 6;
+      delay(200);
+      while (analogRead(0) < 1000)
+        ;
+    }
+    if (menu == 3 && x <= SELECT)
+    {
+      menu = 7;
+      delay(200);
+      while (analogRead(0) < 1000)
+        ;
+    }
+
+    switch (menu)
+    {
+    case 1:
+      lcd.print("Play ");
+      break;
+    case 2:
+      lcd.print("Draw ");
+      break;
+    case 3:
+      lcd.print("Show ");
+      break;
+    case 0:
+      menu = 3;
+      break;
+    case 4:
+      menu = 1;
+      break;
+    case 5: // Play card selection
+      lcd.setCursor(0, 0);
+      lcd.print("Play Card");
+      lcd.setCursor(0, 1);
+      lcd.print(tracker);
+      lcd.print("         ");
+
+      if (x < RIGHT)
+      {
+        tracker++;
+        delay(200);
+        while (analogRead(0) < 1000)
+          ;
+      }
+      if (x <= LEFT)
+      {
+        tracker--;
+        delay(200);
+        while (analogRead(0) < 1000)
+          ;
+      }
+
+      if (x <= SELECT)
+      {
+        lcd.clear();
+        lcd.setCursor(0, 0);
+        lcd.print("Played!");
+        delay(2000);
+        lcd.clear();
+        menu = 1;
+      }
+      break;
+    case 6:
+      lcd.setCursor(0, 0);
+      lcd.print("Card Drawn!");
+      delay(2000);
+      lcd.clear();
+      menu = 2;
+      break;
+    case 7:
+      lcd.setCursor(0, 0);
+      lcd.print("Shown Cards:");
+      delay(2000);
+      lcd.clear();
+      menu = 3;
+      break;
+    }
     break;
 
   case GAME_OVER:
-
-    break;
-  default:
+    // Add handling for game over if necessary
     break;
   }
 
   prevButtonVal = buttonVal;
-
   delay(100);
 }
-
-/*
-  //Packet *incomingPacket = receivePacket();
-
-  switch (incomingPacket->command)
-  {
-  case addPlayer:
-    isConnected = true;
-    pNum = incomingPacket->receiverID;
-
-    AutoPrint(&lcd, incomingPacket->string, 1);
-    tone(3, 500, 200);
-    noTone(3);
-    delay(5000);
-
-    break;
-
-  default:
-    break;
-  }
-
-  int x = analogRead(0);
-  lcd.setCursor(0,1);
-
-//loops between menus depending on when LEFT and RIGHT is pressed
-
-  if (x < RIGHT) {
-    menu++;
-    delay(200);
-        while (x < 1000) {
-      x = analogRead (0);
-    }
-  }
-  if (x <= LEFT) {
-    menu--;
-    delay(200);
-        while (x < 1000) {
-      x = analogRead (0);
-    }
-  }
-
-  //loops between more menus when select is pressed for each main switch case (see switch(menu))
-
-  if (menu == 1 && x <= SELECT) {
-    menu = 5;
-    delay(200);
-       while (x < 1000) {
-      x = analogRead (0);
-    }
-  }
-
-  //initialize switch cases
-    switch(menu) {
-    //MAIN SWITCH CASES (shows the user three options: pass, draw, or show)
-
-    //Switch case 1:
-    case 1:
-    lcd.print("Pass ");
-    break;
-    //Switch case 2:
-    case 2:
-    lcd.print("Draw ");
-    break;
-    //Switch case 3:
-    case 3:
-    lcd.print("Show ");
-    break;
-
-    //INVALID SWITCH CASES (cases that, if encountered, return the user to one of the main switch cases)
-
-    //Switch case 0:
-    case 0:
-    menu = 3;
-    break;
-    //Switch case 4:
-    case 4:
-    menu = 1;
-    break;
-
-    //SELECT SWITCH CASES (cases that, when select is pressed while one of the main switch cases is displayed, returns one of
-    //three functions: pass function, draw function, or show function
-
-    //Switch case 5:
-    case 5:
-        //run pass function
-    break;
-    }
-*/
-//}

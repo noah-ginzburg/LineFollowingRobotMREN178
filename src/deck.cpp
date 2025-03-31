@@ -6,27 +6,35 @@ NOTES:        Queue implementation of the deck of cards
 ATTRIBUTIONS:
 ******************************************************************************/
 #include "deck.h"
-#include <time.h>
 
 // adds card to the queue with wrap around implemented
-void enqueue(CardNode *cardNode, Deck *deck)
+void enqueue(Card *card, Deck *deck)
 {
     if (deck->count >= MAX_CARDS)
         return;
     deck->rear = ++(deck->rear) % MAX_CARDS;
     (deck->count)++;
-    
-    deck->queue[deck->rear] = cardNode;
+
+    deck->queue[deck->rear] = *card;
 };
 
 // removes card from the queue with wrap around implemented
-CardNode *dequeue(Deck *deck)
+Card *dequeue(Deck *deck)
 {
     if (deck->count <= 0)
         return NULL;
-    CardNode *pick = deck->queue[deck->front];
+
+    int lastIndex = deck->front;
     deck->front = ++(deck->front) % MAX_CARDS;
-    return pick;
+    return &deck->queue[lastIndex];
+}
+
+// returns the top card
+Card *peek(Deck *deck)
+{
+    if (deck->count <= 0)
+        return NULL;
+    return &deck->queue[deck->front];
 }
 
 // displays the deck of cards
@@ -35,8 +43,8 @@ void displayDeck(Deck *deck)
     for (int i = 0; i < deck->count; i++)
     {
         int index = (deck->front + i) % MAX_CARDS;
-        displaySuit(deck->queue[index]->card);
-        displayRank(deck->queue[index]->card);
+        displaySuit(&(deck->queue[index]));
+        displayRank(&(deck->queue[index]));
         printf("\n");
     }
 }
@@ -67,7 +75,7 @@ void shuffle(Deck *deck)
     // Seed RNG
     srand((unsigned int)time(NULL));
     int size = deck->count;
-    CardNode *temp[size]; // Temporary array to store cards
+    Card *temp[size]; // Temporary array to store cards
 
     // Dequeue all cards into temp array
     int index = 0;
@@ -78,8 +86,8 @@ void shuffle(Deck *deck)
 
     for (int i = size - 1; i > 0; i--)
     {
-        int j = rand() % (i + 1);     // Random index
-        CardNode *tempCard = temp[i]; // Swap manually
+        int j = rand() % (i + 1); // Random index
+        Card *tempCard = temp[i]; // Swap manually
         temp[i] = temp[j];
         temp[j] = tempCard;
     }
@@ -102,8 +110,8 @@ void initDeck(Deck *deck)
     {
         for (int j = 0; j < 13; j++)
         {
-            Card *new = newCard(j, i); // create a new card
-            enqueue(new, deck);        // add to the deck
+            Card *newCardPtr = newCard(j, i); // create a new card
+            enqueue(newCardPtr, deck);        // add to the deck
         }
     }
 }
