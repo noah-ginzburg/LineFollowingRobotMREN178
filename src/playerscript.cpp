@@ -17,16 +17,17 @@
 #include "player.h"
 #include "card.h"
 
+const int NODE_ID = 2; //Player Node ID (sender ID)
+
 // initialize the library by associating any needed LCD interface pin with the arduino pin number it is connected to
 const int rs = 8, en = 9, d4 = 4, d5 = 5, d6 = 6, d7 = 7;
 LiquidCrystal lcd(rs, en, d4, d5, d6, d7);
+
 const int analogInPin = A0;
 int buttonVal = 0;
 int prevButtonVal = 0;
 
-int pNum = -1;
-
-bool isConnected = false;
+extern SoftwareSerial HC12;
 
 // initialize menu
 int menu = 1;
@@ -36,40 +37,361 @@ int menu = 1;
 
 // Next two lines create a pointer to a card that is passed on 
 // into the sendPacket function to simulate a player playing or receiving a card
-Card testCard = {Five, hearts};
-Card* testCardPtr = &testCard;
+// Card testCard = {Five, hearts};
+// Card* testCardPtr = &testCard;
 
-Card* testHand[10] = {&testCard}; //This creates an array of pointers to cards and sets them all to the 5 of Hearts.
+// Card* testHand[10] = {&testCard}; //This creates an array of pointers to cards and sets them all to the 5 of Hearts.
 // This simulates the master sending the player their hand at the beginning of the game
-
-char string[50] = "Message";
 
 ///// END OF TEST VALUES //////
 
+typedef enum playerstate
+{
+  NOT_CONNECTED,
+  CONNECTED_AND_WAITING,
+  GET_HAND,
+  IN_GAME,
+  GAME_OVER
+} PlayerState;
 
-// prints 'Action:' on LCD
+
+PlayerState ps = NOT_CONNECTED;
+
 void setup()
 {
+  // set up the LCD's number of columns and rows:
   lcd.begin(16, 2);
   HC12.begin(9600);
+  // initialize the serial communications:
   Serial.begin(9600);
-  lcd.setCursor(0, 0);
-  lcd.print("Action:");
 }
 
 // initializes loop
 void loop(){
-  //Serial.println("Inside Loop");
   buttonVal = analogRead(analogInPin);
-
-  if (abs(prevButtonVal - buttonVal) > 20){
-    if (IsButtonPressed(buttonVal, SELECT) && isConnected == false){
-      AutoPrint(&lcd, "Button Pressed!");
-      sendPacket(0, 1, playCard, testCardPtr, testHand, string);
+  Packet *incomingPacket = receivePacket();
+  if (incomingPacket != NULL) {
+    if (incomingPacket->receiverID != NODE_ID && incomingPacket->receiverID != -1) {
+      incomingPacket = NULL;
     }
   }
+
+  switch (ps)
+  {
+    case NOT_CONNECTED:
+      if (abs(prevButtonVal - buttonVal) > 20){
+        if (IsButtonPressed(buttonVal, SELECT)){
+          AutoPrint(&lcd, "Requesting to Connect...");
+          sendPacket(NODE_ID, 0, addPlayer, NULL, NULL);
+        }
+      }
+
+      if (incomingPacket != NULL){
+        if (incomingPacket->command == addPlayer){
+          ps = CONNECTED_AND_WAITING;
+        }
+      }
+      break;
+
+
+    case CONNECTED_AND_WAITING:
+      SwapMessages(&lcd, millis(), "You are Connected!", "Waiting for Game to Start!", 1500);
+      if (incomingPacket != NULL && incomingPacket->command == startGame)
+      {
+        AutoPrint(&lcd, "Game Starting!");
+        delay(2000);
+        ps = GET_HAND;
+        tone(3, 1000, 200);
+        lcd.clear();
+      }
+      break;
+    
+
+    case GET_HAND:
+      if (incomingPacket != NULL){
+        AutoPrint(&lcd, "Hello");
+        if (incomingPacket->command == addHand){
+          Card cardReceived = incomingPacket->cardSent;
+          //add to the player's hand array
+          char rankPtr[2];
+          char suitPtr[2];
+          sprintf(rankPtr, "%d", cardReceived.rank);
+          sprintf(suitPtr, "%d", cardReceived.suit);
+          char card[30] = "New Card: Rank: ";
+          strcat(card, rankPtr);
+          strcat(card, " Suit: ");
+          strcat(card, suitPtr);
+          AutoPrint(&lcd, card, 1);
+        }
+      }
+      break;
+    
+    case IN_GAME:
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+      
+    default:
+      AutoPrint(&lcd, "Default", 1);
+      break;
+  }
   prevButtonVal = buttonVal;
+  delay(100);
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 /*
   //Packet *incomingPacket = receivePacket();
 

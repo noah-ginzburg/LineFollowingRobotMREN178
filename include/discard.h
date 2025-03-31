@@ -11,9 +11,9 @@ typedef struct Discard {
 }Discard;
 
 //Function prototypes
-void insert(Card* card, Discard* deck);
-void initDeck(Discard *deck); //with cards
-void displayDeck(Discard* deck);
+void push(Card* card, Discard* deck);
+void initDiscard(Discard *deck); //with cards
+void displayDiscard(Discard* deck);
 Card* pop(Discard *deck);
 bool isEmpty(Discard* deck);
 bool isFull(Discard* deck);

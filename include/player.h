@@ -29,7 +29,7 @@ typedef enum PlayerOption
 
 typedef struct player
 {
-    Card *cards[MAX_HAND_SIZE];
+    Card* cards[MAX_HAND_SIZE];
     int curNumCards;
     int playerNum;
 } Player;

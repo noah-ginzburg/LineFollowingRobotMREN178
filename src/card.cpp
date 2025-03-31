@@ -5,18 +5,20 @@ DATE:         March/02/2025
 
 ATTRIBUTIONS: [chatgpt]
 ******************************************************************************/
-#include "../include/card.h"
+#include "card.h"
 
-int main(void){
-    printf("Hello");
-}
+#include <Arduino.h>
+
+// int main(void){
+//     printf("Hello");
+// }
 
 //returns a pointer to a new card given the suit and rank
 Card* newCard(int rank, int suit){
-    Card* new = (Card*)malloc(sizeof(Card)); //initalize a new card
-    new->rank = (Rank)(rank);
-    new->suit = (Suit)(suit);
-    return new;
+    Card* newC = (Card*)malloc(sizeof(Card)); //initalize a new card
+    newC->rank = (Rank)(rank);
+    newC->suit = (Suit)(suit);
+    return newC;
 }
 
 //Given two pointers to cards, the function
@@ -32,20 +34,21 @@ void swap(Card* x, Card* y) {
 void displaySuit(Card* x){
     switch (x->suit){
         case clubs:
-            printf("Clubs ");
+            Serial.println("Clubs ");
             //display the card to the LED screen on reciever's arduino
             //repeat the same for the subsequent printf statements
             break;
         case diamonds:
-            printf("Diamonds ");
+            Serial.println("Diamonds ");
             break;
         case hearts:
-            printf("Hearts ");
+            Serial.println("Hearts ");
             break;
         case spades:
-            printf("Spades ");
+            Serial.println("Spades ");
             break;
         default:
+            break;
     }
 }
 
@@ -53,46 +56,46 @@ void displaySuit(Card* x){
 void displayRank(Card* x){
     switch (x->rank){
         case A:
-            printf("A ");
+            Serial.println("A ");
             //Display the rank to the LCD screen
             //functionality needs to be added to
             //replace the printf statements
             break;
         case Two:
-            printf("2 ");
+            Serial.println("2 ");
             break;
         case Three:
-            printf("3 ");
+            Serial.println("3 ");
             break;
         case Four:
-            printf("4 ");
+            Serial.println("4 ");
             break;
         case Five:
-            printf("5 ");
+            Serial.println("5 ");
             break;
         case Six:
-            printf("6 ");
+            Serial.println("6 ");
             break;
         case Seven:
-            printf("7 ");
+            Serial.println("7 ");
             break;
         case Eight:
-            printf("8 ");
+            Serial.println("8 ");
             break;
         case Nine:
-            printf("9 ");
+            Serial.println("9 ");
             break;
         case Ten:
-            printf("10 ");
+            Serial.println("10 ");
             break;
         case Jack:
-            printf("Jack ");
+            Serial.println("Jack ");
             break;
         case Queen:
-            printf("Queen ");
+            Serial.println("Queen ");
             break;
         case King:
-            printf("King ");
+            Serial.println("King ");
             break;
     }
 }
