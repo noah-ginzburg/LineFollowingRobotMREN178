@@ -8,7 +8,6 @@ ATTRIBUTIONS:
 
 #include "discard.h"
 
-
 // displays the discard pile
 void displayDeck(Discard *deck)
 {
@@ -21,7 +20,7 @@ void displayDeck(Discard *deck)
     }
 }
 
-// insert new card into the stack
+// insert new card into the stacka
 void push(Card *card, Discard *deck)
 {
     // check if stack is full
@@ -62,7 +61,7 @@ bool isFull(Discard *deck)
 }
 
 // set top pointer to -1 and count to zero
-void initDiscard(Discard *deck)
+void initDiscard(Discard *discard)
 {
-    deck->tos = -1;
+    discard->tos = -1;
 }

@@ -38,7 +38,7 @@ typedef enum gamestate
   test
 } GameState;
 
-GameState gs = PLAYERS_WAIT;
+GameState gs = INITIALIZE;
 // Player P_NULL;
 // Card C_NULL;
 
@@ -54,7 +54,7 @@ Suit topEightSuit;
 
 //////////////////////////////////////////////////
 
-void ResetGame()
+/*void ResetGame()
 {
   // Initialize everything here again, should reset every single variable
   numPlayers = 0;
@@ -69,7 +69,7 @@ void ResetGame()
     players[i].handSize = 0;
     players[i].playerNum = -1;
   }
-}
+}*/
 
 bool CheckIsCardValid(Card playCard, Card topCard, Suit topSuit)
 {
@@ -79,7 +79,7 @@ bool CheckIsCardValid(Card playCard, Card topCard, Suit topSuit)
 
   if (topCard.rank == Eight)
   {
-    if (playCard.suit == topCard.suit)
+    if (playCard.suit == topSuit) // Check if you're playing the new correct suit
       return true;
   }
   // If the rank or the suit matches, the card is valid
@@ -107,32 +107,56 @@ void StopAllPlayerTurn()
 
 void setup()
 {
-  // set up the LCD's number of columns and rows:
-  lcd.begin(16, 2);
   // initialize the serial communications:
   Serial.begin(9600);
   HC12.begin(9600);
 
+  // set up the LCD's number of columns and rows:
+  lcd.begin(16, 2);
+  lcd.print("lcd begun!");
+
+  
+
   //////////////////////////////////////////////////////
   gs = PLAYERS_WAIT;
+  // C_NULL.rank = A;
+  // C_NULL.suit = clubs;
 
-  initDeck(&deck);
-  initDiscard(&discard); // Visakan made an overloaded funciton, dont worry. the compiler knows which function to choose based on the input passed
+  // for (int i = 0; i < MAX_CARDS; i++)
+  // {
+  //   P_NULL.hand[i] = C_NULL;
+  // }
+
+  // P_NULL.playerNum = -1;
+  // P_NULL.handSize = -1;
+
+  // for (int i = 0; i < MAX_PLAYERS; i++)
+  // {
+  //   players[i] = P_NULL;
+  // }
+
+  
+  //initDeck(&deck);
+  //initDiscard(&discard); // Visakan made an overloaded funciton, dont worry. the compiler knows which function to choose based on the input passed
 }
 
 void loop()
 {
-
   buttonVal = analogRead(analogInPin);
+
+  Serial.print("test loop");
 
   // SwapMessages(&lcd, millis(), "Message1", "Message2", 3000);
 
   switch (gs)
   {
   case INITIALIZE:
-    ResetGame(); // Only implement this if it works
+  {
+    // ResetGame(); // Only implement this if it works
     break;
+  }
   case PLAYERS_WAIT:
+  {
     bool shouldStartGame = false;
 
     // Function to wait on player connect (use a while loop, detect when select is presesd to start the game)
@@ -141,7 +165,7 @@ void loop()
       buttonVal = analogRead(analogInPin);
       // If Received new player from anothre arduino (serial.available)
       // Detect incoming connection from player, check if command packet says connect
-      AutoPrint(&lcd, "Waiting on Player Connect", 1);
+      AutoPrint(&lcd, "Waiting on Player Connect");
 
       Packet *pkt = receivePacket();
 
@@ -149,7 +173,7 @@ void loop()
       {
         if (pkt->command == addPlayer)
         {
-          //
+          // curplayer is the index of the current player, numplayers is the player count
           int curPlayer = numPlayers; // IF we cant reference the second player, adjust this line
           // Serial.print("Current Player Index: ");
           // Serial.println(curPlayer);
@@ -163,7 +187,7 @@ void loop()
           players[curPlayer].playerNum = numPlayers; // Autoincrements the player number
 
           // Print msg to screen
-          AutoPrint(&lcd, "Player ", 1);
+          AutoPrint(&lcd, "Player ");
           AutoPrint(&lcd, players[curPlayer].playerNum, 0);
           ManualPrint(&lcd, "is Connected!", 1, 0, 0);
 
@@ -203,10 +227,11 @@ void loop()
     gs = START_GAME;
 
     break;
-
+  }
   case START_GAME:
+  {
     AutoPrint(&lcd, "Game Starting...", 1);
-    sendPacket(0, -1, startGame, NULL, NULL);
+    sendPacket(0, -1, startGame, NULL, NULL); //-1 means we don't really care, this sends to all
     delay(5000);
 
     currentPlayer = 0;
@@ -223,9 +248,9 @@ void loop()
 
     gs = PLAYER_TURN;
     break;
-
+  }
   case PLAYER_TURN:
-
+  {
     // Check end game condition
     int isGameOver = 0;
 
@@ -252,12 +277,14 @@ void loop()
 
       // formats the turn player messagee
       char msg1[MAX_STR_SIZE] = "Turn: Player #";
-      char pNumStr2[2];
-      sprintf(pNumStr2, "%d", players[currentPlayer].playerNum);
-      strcat(msg1, pNumStr2);
+      char pNumStr[2];
+      sprintf(pNumStr, "%d", players[currentPlayer].playerNum);
+      strcat(msg1, pNumStr);
 
       // Check top discard pile
       Card *topCard = top(&discard);
+
+      // Checks to see if the top card was an 8
       if (topCard->rank != Eight)
         topEightSuit = topCard->suit; // Basically, this prevents the suit from changing again after the user changed the suit by playing an 8
 
@@ -272,12 +299,12 @@ void loop()
 
       // Next whole code block is to format second message on master
       char msg2[MAX_STR_SIZE] = "Top Card:"; // Message formatting
-      char pNumStr3[2];
+      char pNumStr2[2];
 
       if (topCard->rank < Ten && topCard->rank != A)
       {
-        sprintf(pNumStr3, "%d", topCard->rank);
-        strcat(msg2, pNumStr3);
+        sprintf(pNumStr2, "%d", topCard->rank);
+        strcat(msg2, pNumStr2);
       }
       else
       {
@@ -332,6 +359,7 @@ void loop()
                 // Checks if it is an 8
                 if (playCard.rank == Eight)
                 {
+                  sendPacket(0, currentPlayer + 1, changeSuit, NULL, NULL); // send the player to change the suit
                   Packet *extraPacket = NULL;
 
                   do
@@ -342,9 +370,9 @@ void loop()
                   } while (extraPacket == NULL);
 
                   Card receivedCard = getCardFromStr(extraPacket->string);
-                  topEightSuit = receivedCard.suit;
+                  topEightSuit = receivedCard.suit; // Suit switch
 
-                  AutoPrint(&lcd, "Switched suit to: ");
+                  AutoPrint(&lcd, "Switched suit to: "); // Print feedback
                   switch (receivedCard.suit)
                   {
                   case clubs:
@@ -386,7 +414,7 @@ void loop()
           // Check to make sure the player hand does not exceed the max size
           if (players[currentPlayer].handSize < MAX_HAND_SIZE)
           {
-            // Peek at the top card to make sure one exists
+            // Peek at the top card of the deck to make sure a card exists
             Card *drawnCard = peek(&deck);
 
             // checks if the card is not null
@@ -402,6 +430,7 @@ void loop()
             // Add the card to the player hand
             AddCardToHand(&players[currentPlayer], *drawnCard);
 
+            // String formatting
             char strToSend[14] = "You Drew: ";
             char *cardInfo = getStrFromCard(*drawnCard);
             strcat(strToSend, cardInfo);
@@ -434,7 +463,7 @@ void loop()
       }
 
       // If deck is empty, reshuffle discard, enqueue everything to deck
-      if (peek(&deck) == NULL)
+      if (peek(&deck) == NULL)                   // can simplify to deck.count == 0
         ReshuffleDeckWithDiscard(deck, discard); // Might result in an infinite loop
 
       StopAllPlayerTurn();
@@ -445,9 +474,9 @@ void loop()
     }
 
     break;
-
+  }
   case END_GAME:
-
+  {
     int winner = -1;
     for (int i = 0; i < numPlayers; i++)
     {
@@ -457,13 +486,14 @@ void loop()
         break;
       }
     }
+
     if (winner >= 0)
     {
       // Display winner
       char winnerMsg[MAX_STR_SIZE] = "Player #";
-      char pNumStr4[2];
-      sprintf(pNumStr4, "%d", winner + 1); // Player number starts from 1
-      strcat(winnerMsg, pNumStr4);
+      char pNumStr[2];
+      sprintf(pNumStr, "%d", winner + 1); // Player number starts from 1
+      strcat(winnerMsg, pNumStr);
       strcat(winnerMsg, " Wins!");
 
       AutoPrint(&lcd, winnerMsg, 1);
@@ -475,8 +505,14 @@ void loop()
       }*/
       // Do this if it works
     }
+    else
+    {
+      AutoPrint(&lcd, "No winner found...");
+      delay(5000);
+    }
 
     break;
+  }
   default:
     break;
   }
