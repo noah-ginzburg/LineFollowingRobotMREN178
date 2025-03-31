@@ -125,12 +125,12 @@ Card getCardFromStr(char *str)
     return card;
 }
 
-void setup()
+/*void setup()
 {
     Serial.begin(9600);
     HC12.begin(9600);
     pinMode(BUZZER_PIN, OUTPUT);
-}
+}*/
 
 /*void loop()
 { // Don't use, just call the send and receive functions in your code and pass by reference what you want

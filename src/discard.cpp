@@ -8,11 +8,6 @@ ATTRIBUTIONS:
 
 #include "discard.h"
 
-// set top pointer to -1 and count to zero
-void initDeck(Discard *deck)
-{
-    deck->tos = -1;
-}
 
 // displays the discard pile
 void displayDeck(Discard *deck)
@@ -20,8 +15,8 @@ void displayDeck(Discard *deck)
     // Loop until and including the top of the stack (tos)
     for (int i = 0; i <= deck->tos; i++) // Change from i < deck->tos to i <= deck->tos
     {
-        displaySuit(&(deck->stack[i].suit));
-        displayRank(&(deck->stack[i].rank));
+        displaySuit(&(deck->stack[i]));
+        displayRank(&(deck->stack[i]));
         printf("\n");
     }
 }
@@ -64,4 +59,10 @@ bool isFull(Discard *deck)
     if (deck->tos == MAX_CARDS - 1)
         return true;
     return false;
+}
+
+// set top pointer to -1 and count to zero
+void initDiscard(Discard *deck)
+{
+    deck->tos = -1;
 }

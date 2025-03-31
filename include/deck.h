@@ -4,7 +4,6 @@
 #include <stdbool.h>
 
 #include "card.h"
-#include "hand.h"
 
 // struct for a deck
 typedef struct Deck

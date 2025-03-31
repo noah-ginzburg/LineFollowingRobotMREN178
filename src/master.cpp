@@ -61,8 +61,8 @@ void ResetGame()
   currentPlayer = 0;
   prevPlayer = -1;
   gs = PLAYERS_WAIT;
-  initDeck(&deck);    // Reinitialize the deck
-  initDeck(&discard); // Reinitialize the discard pile
+  initDeck(&deck);       // Reinitialize the deck
+  initDiscard(&discard); // Reinitialize the discard pile
   // Reset player hands
   for (int i = 0; i < MAX_PLAYERS; i++)
   {
@@ -115,24 +115,9 @@ void setup()
 
   //////////////////////////////////////////////////////
   gs = PLAYERS_WAIT;
-  // C_NULL.rank = A;
-  // C_NULL.suit = clubs;
-
-  // for (int i = 0; i < MAX_CARDS; i++)
-  // {
-  //   P_NULL.hand[i] = C_NULL;
-  // }
-
-  // P_NULL.playerNum = -1;
-  // P_NULL.handSize = -1;
-
-  // for (int i = 0; i < MAX_PLAYERS; i++)
-  // {
-  //   players[i] = P_NULL;
-  // }
 
   initDeck(&deck);
-  initDeck(&discard); // Visakan made an overloaded funciton, dont worry. the compiler knows which function to choose based on the input passed
+  initDiscard(&discard); // Visakan made an overloaded funciton, dont worry. the compiler knows which function to choose based on the input passed
 }
 
 void loop()
@@ -267,9 +252,9 @@ void loop()
 
       // formats the turn player messagee
       char msg1[MAX_STR_SIZE] = "Turn: Player #";
-      char pNumStr[2];
-      sprintf(pNumStr, "%d", players[currentPlayer].playerNum);
-      strcat(msg1, pNumStr);
+      char pNumStr2[2];
+      sprintf(pNumStr2, "%d", players[currentPlayer].playerNum);
+      strcat(msg1, pNumStr2);
 
       // Check top discard pile
       Card *topCard = top(&discard);
@@ -287,12 +272,12 @@ void loop()
 
       // Next whole code block is to format second message on master
       char msg2[MAX_STR_SIZE] = "Top Card:"; // Message formatting
-      char pNumStr[2];
+      char pNumStr3[2];
 
       if (topCard->rank < Ten && topCard->rank != A)
       {
-        sprintf(pNumStr, "%d", topCard->rank);
-        strcat(msg2, pNumStr);
+        sprintf(pNumStr3, "%d", topCard->rank);
+        strcat(msg2, pNumStr3);
       }
       else
       {
@@ -476,9 +461,9 @@ void loop()
     {
       // Display winner
       char winnerMsg[MAX_STR_SIZE] = "Player #";
-      char pNumStr[2];
-      sprintf(pNumStr, "%d", winner + 1); // Player number starts from 1
-      strcat(winnerMsg, pNumStr);
+      char pNumStr4[2];
+      sprintf(pNumStr4, "%d", winner + 1); // Player number starts from 1
+      strcat(winnerMsg, pNumStr4);
       strcat(winnerMsg, " Wins!");
 
       AutoPrint(&lcd, winnerMsg, 1);

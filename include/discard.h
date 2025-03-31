@@ -12,7 +12,7 @@ typedef struct Discard
 
 // Function prototypes
 void push(Card *card, Discard *deck);
-void initDeck(Discard *deck); // with cards
+void initDiscard(Discard *deck); // with cards
 void displayDeck(Discard *deck);
 Card *pop(Discard *deck);
 Card *top(Discard *deck);
