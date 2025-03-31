@@ -33,7 +33,7 @@ typedef struct packet {
     Cmd command;
     Card cardSent; // Use this when the player sends the master which card to play
     char string[50];     // String the master to send to the players - CHANGE LENGTH DEPENDING ON WHAT YOU WANT
-} Packet;
+} Packet;//
 
 int sendPacket(int senderID, int receiverID, Cmd command, Card* cardSent, char string[]);
 Packet* receivePacket();
