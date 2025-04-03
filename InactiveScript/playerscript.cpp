@@ -39,11 +39,8 @@ const int SHOW_CARDS = 2;
 int mmo = PL_AY;
 int numMMO = 3;
 
-bool isPlayerTurn = true;
+bool isPlayerTurn = false;
 bool isInSubMenu = false;
-
-Card pHand[MAX_HAND_SIZE];
-int handSize;
 
 // If card is being chosen for PLAY:
 int cardIdx = 0;
@@ -86,18 +83,6 @@ byte klubz[] = {
     B01110,
     B0000};
 
-////// TEST VALUES //////
-
-// Next two lines create a pointer to a card that is passed on
-// into the sendPacket function to simulate a player playing or receiving a card
-// Card testCard = {Five, hearts};
-// Card* testCardPtr = &testCard;
-
-// Card* testHand[10] = {&testCard}; //This creates an array of pointers to cards and sets them all to the 5 of Hearts.
-// This simulates the master sending the player their hand at the beginning of the game
-
-///// END OF TEST VALUES //////
-
 typedef enum playerstate
 {
   NOT_CONNECTED,
@@ -107,7 +92,8 @@ typedef enum playerstate
   GAME_OVER
 } PlayerState;
 
-PlayerState ps = IN_GAME;
+PlayerState ps = NOT_CONNECTED;
+Player player;
 
 void setup()
 {
@@ -122,16 +108,22 @@ void setup()
   lcd.createChar(2, speds);
   lcd.createChar(3, klubz);
 
-  handSize = 4;
+  initPlayer(&player);
+  player.playerNum = NODE_ID;
+
+  // Testing
+  /*player.handSize = 4;
   /// test values
-  pHand[0].rank = Two;
-  pHand[0].suit = clubs;
-  pHand[1].rank = Four;
-  pHand[1].suit = hearts;
-  pHand[2].rank = A;
-  pHand[2].suit = spades;
-  pHand[3].rank = Queen;
-  pHand[3].suit = diamonds;
+  player.hand[0].rank = Two;
+  player.hand[0].suit = clubs;
+  player.hand[1].rank = Four;
+  player.hand[1].suit = hearts;
+  player.hand[2].rank = A;
+  player.hand[2].suit = spades;
+  player.hand[3].rank = Queen;
+  player.hand[3].suit = diamonds;*/
+
+  AutoPrint(&lcd, "PRESS SELECT to Connect");
 }
 
 void displayCardLCD(Card chosenCard)
@@ -146,6 +138,10 @@ void displayCardLCD(Card chosenCard)
     {
     case A:
       lcd.write("A");
+      break;
+
+    case Ten:
+      lcd.write("T");
       break;
     case Jack:
       lcd.write("J");
@@ -179,6 +175,9 @@ void displayCardLCD(Card chosenCard)
 // initializes loop
 void loop()
 {
+  // Serial.print("Player State: ");
+  // Serial.println(ps);
+
   buttonVal = analogRead(analogInPin);
   Packet *incomingPacket = receivePacket();
   if (incomingPacket != NULL)
@@ -223,7 +222,7 @@ void loop()
     break;
 
   case GET_HAND:
-    if (incomingPacket != NULL)
+    if (incomingPacket != NULL && incomingPacket->receiverID == NODE_ID)
     {
       AutoPrint(&lcd, "Hello");
       if (incomingPacket->command == addHand)
@@ -239,19 +238,50 @@ void loop()
         strcat(card, " Suit: ");
         strcat(card, suitPtr);
         AutoPrint(&lcd, card, 1);
+
+        //
+        AddCardToHand(&player, cardReceived);
+        Serial.print("Card Added: Rank: ");
+        Serial.print(cardReceived.rank);
+        Serial.print(", Suit: ");
+        Serial.println(cardReceived.suit);
       }
+    }
+
+    if (incomingPacket != NULL && incomingPacket->command == startGame)
+    {
+      Serial.println("switching into game");
+      ps = IN_GAME;
     }
     break;
 
   case IN_GAME:
 
-    if (incomingPacket != NULL && receivePacket()->receiverID == NODE_ID)
+    // Serial.println("test in game");
+
+    if (incomingPacket != NULL && incomingPacket->receiverID == NODE_ID && incomingPacket->senderID == 0)
     {
-      if (incomingPacket->command == startPlayerTurn)
+      Serial.print("Received personalized packet for player ");
+      Serial.println(NODE_ID);
+
+      Cmd cmd = incomingPacket->command;
+
+      if (cmd == endTheGame)
+      {
+        // ps = GAME_OVER;
+      }
+      else if (cmd == stopPlayerTurn)
+      {
+        isPlayerTurn = false;
+        Serial.println("Should stop player trurn");
+      }
+      else if (cmd == startPlayerTurn)
       {
         isPlayerTurn = true;
+        Serial.println("Should start player turn");
       }
     }
+
     if (isPlayerTurn)
     {
       buttonVal = analogRead(analogInPin);
@@ -269,7 +299,13 @@ void loop()
         {
           AutoPrint(&lcd, "CHOOSE CARD");
 
-          Card chosenCard = pHand[cardIdx];
+          Card chosenCard = player.hand[cardIdx];
+          /*Serial.print("Card Index: ");
+          Serial.println(cardIdx);
+          Serial.print("Chosen card number: ");
+          Serial.println(chosenCard.rank);
+          Serial.print("Chosen card suit: ");
+          Serial.println(chosenCard.suit);*/
 
           lcd.setCursor(0, 1);
           displayCardLCD(chosenCard);
@@ -282,28 +318,35 @@ void loop()
             {
               cardIdx++;
 
-              cardIdx = cardIdx % handSize;
+              cardIdx = cardIdx % player.handSize;
             }
             else if (IsButtonPressed(buttonVal, LEFT))
             {
               cardIdx--;
               if (cardIdx < 0)
-                cardIdx = handSize - 1;
+                cardIdx = player.handSize - 1;
             }
             else if (IsButtonPressed(buttonVal, SELECT))
             {
               lcd.clear();
               AutoPrint(&lcd, "PLAYED!");
+
+              /*Serial.println("\nPLAYED");
+              Serial.print("Chosen card number: ");
+              Serial.println(chosenCard.rank);
+              Serial.print("Chosen card suit: ");
+              Serial.println(chosenCard.suit);*/
+
               delay(2000);
               lcd.clear();
               isInSubMenu = false;
               buttonVal = analogRead(analogInPin);
 
-              // return to main menu
+              sendPacket(NODE_ID, 0, playCard, &chosenCard, NULL);
+              deleteCard(&player, chosenCard);
+              isPlayerTurn = false;
             }
           }
-          // cardIdx a card
-          // play it
         }
         break;
       case DR_AW:
@@ -316,10 +359,33 @@ void loop()
         {
           // Send a packet - wait for this
           sendPacket(NODE_ID, 0, drawCard, NULL, NULL);
-          AutoPrint(&lcd, "DRAWN!");
-          delay(2000);
+          Serial.println("Sent packet");
+          AutoPrint(&lcd, "Waiting to receive card...");
+
+          Packet *extraPacket = NULL;
+
+          do
+          {
+            extraPacket = receivePacket();
+            Serial.println("waiting on receive card");
+            delay(200);
+          } while (extraPacket == NULL && extraPacket->senderID != 0);
+
+          /////////////////////////////////////////TEST
+          AddCardToHand(&player, extraPacket->cardSent);
+
+          AutoPrint(&lcd, "Card Received!");
+
+          lcd.setCursor(0, 1);
+          displayCardLCD(extraPacket->cardSent);
+          lcd.home();
+          delay(5000);
           isInSubMenu = false;
           buttonVal = analogRead(analogInPin);
+
+          isPlayerTurn = false;
+
+          ////////////////////////////////////////////////
         }
         break;
       case SHOW_CARDS:
@@ -332,9 +398,9 @@ void loop()
         {
           lcd.home();
 
-          for (int i = 0; i < handSize; i++)
+          for (int i = 0; i < player.handSize; i++)
           {
-            displayCardLCD(pHand[i]);
+            displayCardLCD(player.hand[i]);
             lcd.write(" ");
 
             if (i == 4)
@@ -385,6 +451,11 @@ void loop()
       prevButtonVal = buttonVal;
 
       break;
+    }
+    else
+    {
+      AutoPrint(&lcd, "Waiting For Turn");
+      delay(1000);
     }
   default:
 

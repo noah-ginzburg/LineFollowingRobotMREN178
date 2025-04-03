@@ -13,7 +13,7 @@
 #include "DataTransmission.h"
 
 // Defines all game macros
-#define MAX_PLAYERS 8
+#define MAX_PLAYERS 3
 
 // Hello Here is an Update
 
@@ -50,6 +50,44 @@ int prevPlayer;
 Packet *pkt = NULL;
 
 Suit topEightSuit;
+
+// custom characters:
+byte dimon[] = {
+    B00000,
+    B00100,
+    B01110,
+    B11111,
+    B11111,
+    B01110,
+    B00100,
+    B00000};
+byte hart[] = {
+    B00000,
+    B01010,
+    B11111,
+    B11111,
+    B01110,
+    B00100,
+    B00000,
+    B00000};
+byte speds[] = {
+    B00000,
+    B00100,
+    B01110,
+    B11111,
+    B10101,
+    B00100,
+    B01110,
+    B00000};
+byte klubz[] = {
+    B00000,
+    B01110,
+    B01110,
+    B11111,
+    B11111,
+    B00100,
+    B01110,
+    B0000};
 
 //////////////////////////////////////////////////
 
@@ -89,7 +127,53 @@ void ReshuffleDeckWithDiscard(Deck deck, Discard discard)
 
 void StopAllPlayerTurn()
 {
-  // sendPacket(0, -1, stopPlayerTurn, NULL, NULL);
+  sendPacket(0, -1, stopPlayerTurn, NULL, NULL);
+}
+
+void displayCardLCD(Card chosenCard)
+{
+  if (chosenCard.rank > 1 && chosenCard.rank < 10)
+  {
+    lcd.write((int)(chosenCard.rank));
+  }
+  else
+  {
+    switch (chosenCard.rank)
+    {
+    case A:
+      lcd.write("A");
+      break;
+
+    case Ten:
+      lcd.write("T");
+      break;
+    case Jack:
+      lcd.write("J");
+      break;
+    case Queen:
+      lcd.write("Q");
+      break;
+    case King:
+      lcd.write("K");
+      break;
+    }
+  }
+
+  switch (chosenCard.suit)
+  {
+  case diamonds:
+    lcd.write(byte(0));
+    break;
+  case hearts:
+    lcd.write(byte(1));
+    break;
+  case spades:
+    lcd.write(byte(2));
+    break;
+  case clubs:
+    lcd.write(byte(3));
+    break;
+  }
 }
 
 void setup()
@@ -99,6 +183,11 @@ void setup()
   HC12.begin(9600);
   // initialize the serial communications:
   Serial.begin(9600);
+
+  lcd.createChar(0, dimon);
+  lcd.createChar(1, hart);
+  lcd.createChar(2, speds);
+  lcd.createChar(3, klubz);
 }
 
 void loop()
@@ -165,6 +254,7 @@ void loop()
         Serial.println("Button is pressed!");
         if (numPlayers > 1)
         {
+          Serial.println("Should start game is true");
           shouldStartGame = true;
         }
       }
@@ -178,69 +268,106 @@ void loop()
   {
     AutoPrint(&lcd, "Game Starting...", 1);
     sendPacket(0, -1, startGame, NULL, NULL);
+    Serial.println("PACKET SENT TO ALL");
     delay(3000);
     initDeck(&deck);
+    Serial.println("deck initialized");
     initDiscard(&discard);
-    shuffle(&deck);
+    Serial.println("Discard initialized");
 
-    for (int i = 0; i < numPlayers; i++)
+    shuffle(&deck);
+    Serial.println("Deck Shuffled");
+
+    for (int i = 1; i <= numPlayers; i++)
     {
       Serial.print("\nDealing cards to player ");
-      Serial.println(i + 1);
+      Serial.println(i);
       for (int j = 0; j < NUM_STARTING_CARDS; j++)
       {
-        Card *retrieved = dequeue(&deck);
-        if (retrieved != NULL)
-        {
-          Serial.print(j + 1);
-          Serial.print(". ");
-          Serial.print((int)retrieved->rank);
-          Serial.print(" of ");
-          Serial.println((int)retrieved->suit);
-        }
-        sendPacket(0, players[i], addHand, retrieved, NULL);
-        delay(1000);
+        Card retrieved = dequeue(&deck);
+        Serial.print(j + 1);
+        Serial.print(". ");
+        Serial.print((int)retrieved.rank);
+        Serial.print(" of ");
+        Serial.println((int)retrieved.suit);
+        sendPacket(0, i, addHand, &retrieved, NULL);
+        delay(200);
       }
     }
-    push(dequeue(&deck), &discard); // lay down the first card
+
+    Card firstCard = dequeue(&deck);
+
+    push(&firstCard, &discard); // lay down the first card
+
+    Serial.print("discard Added: Rank: ");
+    Serial.print(firstCard.rank);
+    Serial.print(", Suit: ");
+    Serial.println(firstCard.suit);
+
     gs = PLAYER_TURN;
     lcd.clear();
-    AutoPrint(&lcd, "Player 1's Turn", 1);
 
     currentPlayerTurn = 1;
+
+    sendPacket(0, -1, startGame, NULL, NULL);
+    delay(2000);
   }
   else if (gs == PLAYER_TURN)
   {
     Packet *pkt = receivePacket();
 
     // Check for end game
-    if (pkt != NULL) //&& pkt->command == playerWon
+    if (pkt != NULL && pkt->command == endTheGame)
     {
       gs = END_GAME;
 
-      // sendPacket(0, -1, endTheGame, NULL, "GAME OVER"); // ends the game
+      sendPacket(0, -1, endTheGame, NULL, "GAME OVER"); // ends the game
     }
     else
     {
+      bool isNextPTurn = false;
+
+      lcd.clear();
+      lcd.home();
+      lcd.print("Player ");
+      lcd.print((int)currentPlayerTurn);
+      lcd.print("'s Turn");
+
+      Card tempTopCard = *top(&discard);
+
+      lcd.setCursor(0, 1);
+      lcd.print("Top Card: ");
+      displayCardLCD(tempTopCard);
+
+      /*Serial.print("Top card: Rank: ");
+      Serial.print((*top(&discard)).rank);
+      Serial.print(", Suit: ");
+      Serial.println((*top(&discard)).suit);*/
+
       if (prevPlayer != currentPlayerTurn)
       {
-        sendPacket(0, currentPlayerTurn + 1, startPlayerTurn, NULL, NULL); // Starts the player's turn
+        Serial.println(currentPlayerTurn);
+        // Packet Sent to start player turn
+        Serial.println("Sent packet to start player turn");
+        sendPacket(0, currentPlayerTurn, startPlayerTurn, NULL, NULL); // Starts the player's turn
       }
 
-      Packet *pkt = receivePacket();
-
-      // formats the turn player messagee
-      /*char msg1[33] = "Turn: Player #";
-      char pNumStr[2];
-      sprintf(pNumStr, "%d", players[currentPlayerTurn].playerNum);
-      strcat(msg1, pNumStr);*/
-
-      if (pkt != NULL)
+      if (pkt != NULL && pkt->senderID == currentPlayerTurn)
       {
-        if (pkt->command = playCard)
+        Serial.println("Received packet from player");
+        Serial.print("Command: ");
+        Serial.println(pkt->command);
+
+        switch (pkt->command)
         {
+        case playCard:
           // Check top discard pile
           Card *topCard = top(&discard);
+          Serial.print("Top card: ");
+          Serial.print(topCard->rank);
+          Serial.print(", of ");
+          Serial.println(topCard->suit);
+
           if (topCard->rank != Eight)
             topEightSuit = topCard->suit; // Basically, this prevents the suit from changing again after the user changed the suit by playing an 8
 
@@ -248,156 +375,125 @@ void loop()
           {
             AutoPrint(&lcd, "ERR: top of discard NULL");
             delay(5000);
+            isNextPTurn = false;
           }
 
-          // char tempSuitChar = 'a'; //the custonm caharater for the suits
+          Card playCard = pkt->cardSent;
+          Serial.print("play card: ");
+          Serial.print(playCard.rank);
+          Serial.print(", of ");
+          Serial.println(playCard.suit);
 
-          // Next whole code block is to format second message on master
-          /*char msg2[MAX_STR_SIZE] = "Top Card:"; // Message formatting
-          char pNumStr[2];
+          // deciher the card that was requested to be played
 
-          if (topCard->rank < Ten && topCard->rank != A)
+          if (CheckIsCardValid(playCard, *topCard, topEightSuit)) //, determine validity of the card played
           {
-            sprintf(pNumStr, "%d", topCard->rank);
-            strcat(msg2, pNumStr);
+            Serial.println("playCard was valid");
+            // Adds the card to the discard pile
+            push(&playCard, &discard);
+            Serial.println("pushed card to discard");
+
+            Serial.println("test");
+
+            // Checks if it is an 8
+            if (playCard.rank == Eight)
+            {
+              Packet *extraPacket = NULL;
+              sendPacket(0, currentPlayerTurn, changeSuit, NULL, NULL);
+              Serial.println("test");
+
+              do
+              {
+                extraPacket = receivePacket();
+                AutoPrint(&lcd, "Waiting on Suit Change");
+                delay(50);
+              } while (extraPacket == NULL);
+
+              Serial.println("test");
+              Card receivedCard = extraPacket->cardSent;
+              topEightSuit = receivedCard.suit;
+
+              AutoPrint(&lcd, "Switched suit to: ");
+              switch (receivedCard.suit)
+              {
+              case clubs:
+                ManualPrint(&lcd, "CLUBS", 1, 0, 0);
+                break;
+              case diamonds:
+                ManualPrint(&lcd, "DIAMONDS", 1, 0, 0);
+                break;
+              case hearts:
+                ManualPrint(&lcd, "HEARTS", 1, 0, 0);
+                break;
+              case spades:
+                ManualPrint(&lcd, "SPADES", 1, 0, 0);
+                break;
+              }
+
+              delay(5000);
+              Serial.println("Setting next player turn to true");
+              isNextPTurn = true;
+            }
           }
           else
           {
-            switch (topCard->rank)
-            {
-            case A:
-              strcat(msg2, "A");
-              break;
-            case Jack:
-              strcat(msg2, "J");
-              break;
-            case Queen:
-              strcat(msg2, "Q");
-              break;
-            case King:
-              strcat(msg2, "K");
-              break;
-            }
-          } // all to do with the message formatting*/
-
-          // Displays the messages
-          // AutoPrint(&lcd, msg1);
-          // ManualPrint(&lcd, msg2, 1, 0, 0);
-          // Manual.print &lcs, custom character, figure out spacing
-
-          // Wait on player option
-          if (pkt != NULL && pkt->senderID == currentPlayerTurn)
-          {
-            // Determine player's requirested action
-            switch (pkt->command)
-            {
-            case playCard:
-
-              Card playCard = pkt->cardSent;
-
-              // deciher the card that was requested to be played
-
-              if (CheckIsCardValid(playCard, *topCard, topEightSuit)) //, determine validity of the card played
-              {
-                // Adds the card to the discard pile
-                push(&playCard, &discard);
-
-                // Checks if it is an 8
-                if (playCard.rank == Eight)
-                {
-                  Packet *extraPacket = NULL;
-
-                  do
-                  {
-                    extraPacket = receivePacket();
-                    AutoPrint(&lcd, "Waiting on Suit Change");
-                    delay(50);
-                  } while (extraPacket == NULL);
-
-                  Card receivedCard = extraPacket->cardSent;
-                  topEightSuit = receivedCard.suit;
-
-                  AutoPrint(&lcd, "Switched suit to: ");
-                  switch (receivedCard.suit)
-                  {
-                  case clubs:
-                    ManualPrint(&lcd, "CLUBS", 1, 0, 0);
-                    break;
-                  case diamonds:
-                    ManualPrint(&lcd, "DIAMONDS", 1, 0, 0);
-                    break;
-                  case hearts:
-                    ManualPrint(&lcd, "HEARTS", 1, 0, 0);
-                    break;
-                  case spades:
-                    ManualPrint(&lcd, "SPADES", 1, 0, 0);
-                    break;
-                  }
-
-                  delay(5000);
-                }
-              }
-              else
-              {
-                // Prit error
-                AutoPrint(&lcd, "Card Delete Failed, Skipping Turn");
-                delay(5000);
-              }
-            }
+            // Prit error
+            AutoPrint(&lcd, "Card was invalid, try again");
+            delay(5000);
+            isNextPTurn = false;
+            sendPacket(0, currentPlayerTurn, tryAgain, &playCard, NULL);
           }
-        }
-        else if (pkt->command == drawCard)
+
+          break;
+
+        case drawCard:
         {
           // Peek at the top card to make sure one exists
-          Card *drawnCard = peek(&deck);
+          Card drawnCard = peek(&deck);
 
           // checks if the card is not null
-          if (drawnCard == NULL)
+          if (drawnCard.rank == BAD)
           {
             // Reshuffle the deck to ensure a card exists
             ReshuffleDeckWithDiscard(deck, discard);
           }
 
-          // Now actually pop (remove from deck) that card and store it
           drawnCard = dequeue(&deck);
 
-          // Add the card to the player hand
-          // sendPacket(0, currentPlayerTurn + 1, addHand, drawCard, NULL);
-
-          /*char strToSend[14] = "You Drew: ";
-          strcat(strToSend, cardInfo);
-          */
-
           AutoPrint(&lcd, "You Drew: ");
-          lcd.write(drawnCard->rank);
-          lcd.write(drawnCard->suit);
-        }
-        else
-        {
-          // Skip the turn and output messages
-          AutoPrint(&lcd, "Player #");
-          AutoPrint(&lcd, currentPlayerTurn + 1, 0);
-          ManualPrint(&lcd, "at max hand size", 1, 0, 0);
-          delay(5000);
-          AutoPrint(&lcd, "Skipping Turn...");
+          displayCardLCD(drawnCard);
           delay(5000);
 
-          // Send feedback to skip player turn
-          // sendPacket(0, currentPlayerTurn + 1, stopPlayerTurn, &players[currentPlayerTurn], "Skipping Your Turn...");
+          isNextPTurn = true;
+        }
+        break;
+        }
+
+        Card peekCard = peek(&deck);
+
+        // If deck is empty, reshuffle discard, enqueue everything to deck
+        if (peekCard.rank == BAD)
+          ReshuffleDeckWithDiscard(deck, discard); // Might result in an infinite loop
+
+        StopAllPlayerTurn();
+
+        if (isNextPTurn)
+        {
+          Serial.println("isNext Player turn");
+          // Move to the next player
+          currentPlayerTurn++;
+          if (currentPlayerTurn > numPlayers)
+            currentPlayerTurn = 1;
         }
       }
+
+      // Serial.println(prevPlayer);
+      // Serial.println(currentPlayerTurn);
+      prevPlayer = currentPlayerTurn;
     }
-
-    // If deck is empty, reshuffle discard, enqueue everything to deck
-    if (peek(&deck) == NULL)
-      ReshuffleDeckWithDiscard(deck, discard); // Might result in an infinite loop
-
-    StopAllPlayerTurn();
-
-    prevPlayer = currentPlayerTurn;
-    // Move to the next player
-    currentPlayerTurn = (currentPlayerTurn + 1) % numPlayers;
   }
+
+  delay(100);
 }
 
 // Master goes "waiting for players"

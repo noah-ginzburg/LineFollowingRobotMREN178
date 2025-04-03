@@ -6,10 +6,8 @@ NOTES:        Queue implementation of the deck of cards
 ATTRIBUTIONS:
 ******************************************************************************/
 #include "deck.h"
-#include <time.h>
 #include <Arduino.h>
 
-// initialize the deck of cards
 void initDeck(Deck *deck)
 {
     deck->front = 0;
@@ -18,10 +16,13 @@ void initDeck(Deck *deck)
 
     for (int i = 0; i < 4; i++)
     {
-        for (int j = 0; j < 13; j++)
+        for (int j = A; j <= King; j++)
         {
-            Card *newC = newCard(j, i); // create a new card
-            enqueue(newC, deck);        // add to the deck
+            // Store values directly in the queue array
+            deck->rear = (deck->rear + 1) % MAX_CARDS;
+            deck->queue[deck->rear].suit = (Suit)i;
+            deck->queue[deck->rear].rank = (Rank)j;
+            deck->count++;
         }
     }
 }
@@ -33,24 +34,31 @@ void enqueue(Card *card, Deck *deck)
         return;
     deck->rear = (deck->rear + 1) % MAX_CARDS;
     deck->count++;
-    deck->queue[deck->rear] = card;
+    deck->queue[deck->rear] = *card;
 }
 
-// removes card from the queue with wrap around implemented
-Card *dequeue(Deck *deck)
+Card dequeue(Deck *deck)
 {
     if (deck->count <= 0)
-        return NULL;
-    int lastIndex = deck->front;
-    deck->front = ++(deck->front) % MAX_CARDS;
-    return deck->queue[lastIndex];
+    {
+        Card empty = {A, clubs}; // Define these in your enum
+        return empty;
+    }
+    Card result = deck->queue[deck->front];
+    deck->front = (deck->front + 1) % MAX_CARDS;
+    deck->count--;
+    return result;
 }
 
 // returns the top card
-Card *peek(Deck *deck)
+Card peek(Deck *deck)
 {
     if (deck->count <= 0)
-        return NULL;
+    {
+        Card empty = {BAD, clubs};
+        return empty;
+    }
+
     return deck->queue[deck->front];
 }
 
@@ -60,8 +68,8 @@ void displayDeck(Deck *deck)
     for (int i = 0; i < deck->count; i++)
     {
         int index = (deck->front + i) % MAX_CARDS;
-        displaySuit(deck->queue[index]);
-        displayRank(deck->queue[index]);
+        displaySuit(&(deck->queue[index]));
+        displayRank(&(deck->queue[index]));
         Serial.println();
     }
 }
@@ -82,34 +90,36 @@ bool isFull(Deck *deck)
     return false;
 }
 
-// shuffle deck of cards using Fisher-Yates Shuffle
-// chatgpt was used to implement Fisher-Yates Shuffle
 void shuffle(Deck *deck)
 {
-    randomSeed(analogRead(0)); // Use Arduino's random
-    int size = deck->count;
-    Card *temp[size]; // an array to store the cards
+    if (deck == NULL || deck->count == 0)
+        return;
 
-    int index = 0;
-    // dequeue all the cards
-    while (!isEmpty(deck))
+    randomSeed(analogRead(0)); // Better randomness
+    int size = deck->count;
+
+    // Create temporary array of Cards (not pointers)
+    Card temp[MAX_CARDS]; // Use max size to avoid VLA
+
+    // Dequeue all cards into temp array
+    for (int i = 0; i < size; i++)
     {
-        temp[index++] = dequeue(deck);
+        temp[i] = dequeue(deck);
     }
 
-    // sort the cards in the temp array
+    // Fisher-Yates shuffle
     for (int i = size - 1; i > 0; i--)
     {
-        // Generate a random index j such that 0 <= j <= i
-        int j = rand() % (i + 1);
-        // Swap temp[i] with temp[j]
-        swap(temp[i], temp[j]);
+        int j = random(i + 1); // Arduino's better random function
+        // Swap cards
+        Card tmp = temp[i];
+        temp[i] = temp[j];
+        temp[j] = tmp;
     }
 
-    // enqueue all the cards back in the deck
-    int added = 0;
-    while (added < size)
+    // Enqueue back
+    for (int i = 0; i < size; i++)
     {
-        enqueue(temp[added++], deck);
+        enqueue(&temp[i], deck);
     }
 }

@@ -105,9 +105,9 @@ void SwapMessages(LiquidCrystal *lcd, unsigned long totalTime, char *str1, char 
             isMsg1On = !isMsg1On;
             isActive = 1;
 
-            Serial.println("Switching Messages...");
-            Serial.println(totalTime);
-            Serial.println("");
+            //Serial.println("Switching Messages...");
+           // Serial.println(totalTime);
+           // Serial.println("");
         }
     }
     else

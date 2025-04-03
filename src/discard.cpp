@@ -40,7 +40,7 @@ void push(Card *card, Discard *deck)
     if (deck->tos == MAX_CARDS - 1)
         return;
     // add card to stack and increment count by 1
-    deck->stack[(deck->tos)++] = card;
+    deck->stack[++(deck->tos)] = card;
 }
 
 // removes card from the stack

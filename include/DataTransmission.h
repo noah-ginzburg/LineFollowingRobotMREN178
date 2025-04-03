@@ -33,7 +33,11 @@ typedef enum commands
     addHand,
     showCards,
     startGame,
-    startPlayerTurn
+    startPlayerTurn,
+    stopPlayerTurn,
+    tryAgain,
+    changeSuit,
+    endTheGame
 } Cmd; // Commands
 
 typedef struct packet

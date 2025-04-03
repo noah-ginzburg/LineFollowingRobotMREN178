@@ -16,6 +16,7 @@ typedef enum
 } Suit;
 typedef enum
 {
+    BAD = 0,
     A = 1,
     Two,
     Three,

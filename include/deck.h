@@ -10,13 +10,13 @@ typedef struct Deck{
     int front;
     int rear;
     int count;
-    Card* queue[MAX_CARDS];
+    Card queue[MAX_CARDS];
 }Deck;
 
 //Function prototypes
 void enqueue(Card* card, Deck* deck);
-Card* dequeue(Deck* deck);
-Card* peek(Deck* deck);
+Card dequeue(Deck* deck);
+Card peek(Deck* deck);
 void initDeck(Deck* deck);
 void displayDeck(Deck* deck);
 void shuffle(Deck* deck);
